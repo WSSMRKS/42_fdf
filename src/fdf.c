@@ -6,7 +6,7 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/17 12:52:45 by maweiss           #+#    #+#             */
-/*   Updated: 2024/04/17 12:53:43 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/04/17 15:52:45 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 int	main(void)
 {
 	void	*mlx;
+	void	*img;
 
 	mlx = mlx_init();
+	img = mlx_new_image(mlx, 1920, 1080);
 }
