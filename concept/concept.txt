@@ -1,0 +1,51 @@
+FdF - Wireframe project
+
+Tips:
+	use libft to the fullest
+		get_next_line
+		ft_split
+		etc.
+		no crashs but error when map is not propperly formatted.
+
+New concepts:
+	MiniLibX
+
+Boundaries:
+	Program name: fdf
+	allowed functions:
+		open, close, read, write, malloc, free, perror, strerror, exit;
+		all functions of the math library (-lm compiler option, man 3 math)
+		all functions of the MiniLibX
+		ft_printf and any equivalent YOU coded
+		libft
+
+Description:
+	This project is about creating a simple wireframe model representation
+	of a 3D landscape by linking various points (x, y, z)
+	thanks to line segments (edges)
+	Rules:
+		must use MiniLibX
+		Makefile
+		No global variables
+
+	Rendering:
+		Isometric projection
+		maps are ".fdf"-files
+		map structure:
+			x = pos in line
+			y = number of line
+			z = value
+	Graphics:
+		display the image in a window
+		smooth window management (changing window, minimizing, and so on)
+		ESC must close the window and quit the program clean (no memory leaks)
+		clicking "x" must close the window and quit the program clean (no memory leaks)
+		use MiniLibX
+
+	Bonus:
+		Include one extra Projection (parallel or conic)
+		Zoom in and out
+		Translate your model
+		Rotate your model
+		Add one more bonus of your choice
+
