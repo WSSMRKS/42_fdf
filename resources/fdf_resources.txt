@@ -1,0 +1,25 @@
+Whiteboard:			
+	https://whiteboard.fi/c91f2407-757a-4c39-ba68-9bfa0f36bc56
+42 Docs minilibX introduction:	
+	https://harm-smits.github.io/42docs/libs/minilibx/colors.html
+introduction to Xlib:		
+	https://tronche.com/gui/x/xlib/
+stackexchange article on isometric view:
+	https://gamedev.stackexchange.com/questions/125590/calculate-length-of-isometric-line
+Wikipedia isometric Projection:
+	https://en.wikipedia.org/wiki/Isometric_projection
+Scratchapixel book on Computer Graphics:
+	https://www.scratchapixel.com/index.html
+3blue1brown on linear algebra (easy):
+	https://www.youtube.com/watch?v=fNk_zzaMoSs&list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab	
+Khan Academy on Linear algebra:
+	https://www.khanacademy.org/math/linear-algebra
+Wikipedia on Rotation_Matrix:
+	https://en.wikipedia.org/wiki/Rotation_matrix
+Isometric Coordinates in 2D Games
+	https://www.youtube.com/watch?v=04oQ2jOUjkU
+FdF of Dafne:
+	https://github.com/dafneko/FdF-42
+Gitbook on FdF:
+	https://42-cursus.gitbook.io/guide/rank-02/fdf
+	

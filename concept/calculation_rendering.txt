@@ -1,0 +1,36 @@
+Rendering the image for FdF:
+
+Input:
+	Examle:
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 9 9 0 0 9 9 0 0 0 9 9 9 9 9 0 0 0
+	0 0 9 9 0 0 9 9 0 0 0 0 0 0 0 9 9 0 0
+	0 0 9 9 0 0 9 9 0 0 0 0 0 0 0 9 9 0 0
+	0 0 9 9 9 9 9 9 0 0 0 0 9 9 9 9 0 0 0
+	0 0 0 9 9 9 9 9 0 0 0 9 9 0 0 0 0 0 0
+	0 0 0 0 0 0 9 9 0 0 0 9 9 0 0 0 0 0 0
+	0 0 0 0 0 0 9 9 0 0 0 9 9 9 9 9 9 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	
+	
+	square distances:
+	square size: x*y
+	10*10
+	linking line:
+	0 0
+	0 0
+	if ( 
+	
+	General mathmatic thoughts:
+	0x0 = top
+	[y][x]
+	10x0 = left 
+	0x10 = right
+	10x10= bottom
+	
+	length of a line in the horizontal plane:
+	30 degree angle.
+	line length = triangle: 
+	
