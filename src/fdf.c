@@ -5,13 +5,18 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/17 12:52:45 by maweiss           #+#    #+#             */
-/*   Updated: 2024/04/21 13:46:40 by maweiss          ###   ########.fr       */
+/*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
+/*   Updated: 2024/04/21 18:42:21 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <mlx.h>
 #include "../libft.h"
+#include <string.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 
 typedef struct s_data {
 	void	*img;
@@ -20,11 +25,10 @@ typedef struct s_data {
 	int		line_length;
 	int		endian;
 }				t_data;
-
-typedef struct svars {
+typedef struct s_vars {
 	void	*mlx;
 	void	*win;
-	void	*img;
+	t_data	*img;
 }				t_vars;
 
 void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
@@ -35,61 +39,69 @@ void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
 	*(unsigned int *)dst = color;
 }
 
-int	key_action(int keycode, t_vars vars)
+int	close_mlx(int keycode, t_vars *vars)
 {
 	static int	old_key;
 
 	ft_printf("%d\n", keycode);
 	if (keycode == 65307 || (old_key == 65507 && keycode == 99))
 	{
-		ft_printf("running\n");
-		mlx_destroy_image(vars.mlx, vars.img);
-		// ft_printf("running\n");
-		// mlx_destroy_window(vars.mlx, vars.win);
-		// ft_printf("running\n");
-		// mlx_destroy_display(vars.mlx);
-		ft_printf("Program terminated Gracefully ❤️");
-		exit (0);
+		mlx_destroy_window(vars->mlx, vars->win);
+		mlx_destroy_image(vars->mlx, vars->img->img);
+		mlx_destroy_display(vars->mlx);
+		free(vars->mlx);
+		exit(1);
 	}
 	old_key = keycode;
 	return (0);
 }
 
+void	init_errors(void)
+{
+	strerror(1);
+}
 
-int	main(void)
+int	ft_input_handler(int argc, char **argv)
+{
+	int	fd;
+	if (argc != 2)
+		return (-1);
+	else
+	{
+		fd = open(argv[2], O_RDONLY);
+		if (fd < 0)
+		{
+			perror("Error: No such file or directory");
+			exit(1);
+		}
+		else
+			ft_printf("ft_parse_input(%d)\n", fd);
+		return (0);
+	}
+	return (0);
+}
+
+int	main(int argc, char **argv)
 {
 	t_vars	vars;
 	t_data	img;
 
+	if (ft_input_handler(argc, argv) == -1)
+	{
+		ft_printf_err("Error: Invalid number of arguments.\n");
+		exit(1);
+		return (0);
+	}
 	vars.mlx = mlx_init();
-	ft_printf("%d\n", vars.mlx);
-	vars.win = mlx_new_window(vars.mlx, 960, 930, "Test1!");
-	ft_printf("%d\n", vars.win);
-	vars.img = &img;
-	img.img = mlx_new_image(vars.mlx, 960, 930);
-	ft_printf("%d\n", img.img);
+	vars.win = mlx_new_window(vars.mlx, 1920, 1080, "Hello world!");
+	img.img = mlx_new_image(vars.mlx, 1920, 1080);
 	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixel,
 			&img.line_length, &img.endian);
-	ft_printf("%c\n", img.addr);
 	my_mlx_pixel_put(&img, 460, 85, 0x00FF0000);
 	mlx_put_image_to_window(vars.mlx, vars.win, img.img, 0, 0);
-	mlx_hook(vars.win, 02, (1L << 0), key_action, &vars);
+	vars.img = &img;
+	mlx_hook(vars.win, 2, 1L << 0, close_mlx, &vars);
+	mlx_hook(vars.win, 17, 1L << 0, close_mlx, &vars);
 	mlx_loop(vars.mlx);
+
 }
-
-// int	main(void)
-// {
-// 	void	*mlx;
-// 	t_data	img;
-
-// 	mlx = mlx_init();
-// 	img.img = mlx_new_image(mlx, 1920, 1080);
-
-// 	/*
-// 	** After creating an image, we can call `mlx_get_data_addr`, we pass
-// 	** `bits_per_pixel`, `line_length`, and `endian` by reference. These will
-// 	** then be set accordingly for the *current* data address.
-// 	*/
-// 	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixel,
-// 			&img.line_length, &img.endian);
-// }
