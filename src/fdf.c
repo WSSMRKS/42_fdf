@@ -6,20 +6,26 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/17 12:52:45 by maweiss           #+#    #+#             */
-/*   Updated: 2024/04/18 13:33:17 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/04/21 13:46:40 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <mlx.h>
 #include "../libft.h"
 
-typedef struct	s_data {
+typedef struct s_data {
 	void	*img;
 	char	*addr;
 	int		bits_per_pixel;
 	int		line_length;
 	int		endian;
 }				t_data;
+
+typedef struct svars {
+	void	*mlx;
+	void	*win;
+	void	*img;
+}				t_vars;
 
 void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
 {
@@ -29,24 +35,46 @@ void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
 	*(unsigned int *)dst = color;
 }
 
+int	key_action(int keycode, t_vars vars)
+{
+	static int	old_key;
+
+	ft_printf("%d\n", keycode);
+	if (keycode == 65307 || (old_key == 65507 && keycode == 99))
+	{
+		ft_printf("running\n");
+		mlx_destroy_image(vars.mlx, vars.img);
+		// ft_printf("running\n");
+		// mlx_destroy_window(vars.mlx, vars.win);
+		// ft_printf("running\n");
+		// mlx_destroy_display(vars.mlx);
+		ft_printf("Program terminated Gracefully ❤️");
+		exit (0);
+	}
+	old_key = keycode;
+	return (0);
+}
+
+
 int	main(void)
 {
-	void	*mlx;
-	void	*mlx_win;
+	t_vars	vars;
 	t_data	img;
 
-	mlx = mlx_init();
-	ft_printf("%d\n", mlx);
-	mlx_win = mlx_new_window(mlx, 960, 930, "Test1!");
-	ft_printf("%d\n", mlx_win);
-	img.img = mlx_new_image(mlx, 960, 930);
+	vars.mlx = mlx_init();
+	ft_printf("%d\n", vars.mlx);
+	vars.win = mlx_new_window(vars.mlx, 960, 930, "Test1!");
+	ft_printf("%d\n", vars.win);
+	vars.img = &img;
+	img.img = mlx_new_image(vars.mlx, 960, 930);
 	ft_printf("%d\n", img.img);
 	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixel,
 			&img.line_length, &img.endian);
 	ft_printf("%c\n", img.addr);
 	my_mlx_pixel_put(&img, 460, 85, 0x00FF0000);
-	mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
-	mlx_loop(mlx);
+	mlx_put_image_to_window(vars.mlx, vars.win, img.img, 0, 0);
+	mlx_hook(vars.win, 02, (1L << 0), key_action, &vars);
+	mlx_loop(vars.mlx);
 }
 
 // int	main(void)
