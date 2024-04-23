@@ -6,7 +6,7 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/04/22 15:02:49 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/04/23 14:53:52 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include <math.h>
+#define PI 3.14159265
 
 typedef struct s_data {
 	void	*img;
@@ -25,12 +26,25 @@ typedef struct s_data {
 	int		line_length;
 	int		endian;
 }				t_data;
+
+typedef struct s_point {
+	int	x;
+	int	y;
+	int	z;
+}				t_point;
+
 typedef struct s_vars {
 	void	*mlx;
 	void	*win;
 	t_data	*img;
-	char	**map;
+	t_point	***map;
 }				t_vars;
+
+typedef struct s_line_lst {
+	char		*line;
+	char		**split_line;
+	void		*next;
+}				t_line_lst;
 
 void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
 {
@@ -72,16 +86,77 @@ void	init_errors(void)
 	strerror(1);
 }
 
-int	ft_parse_input(char **map, int fd)
+void	ft_calc_points(t_point *point, int x, int y)
 {
-	char	*line;
+	int	alpha;
 
+	alpha = 30 * (PI / 180);
+	point->x = x * (int)cos(alpha) + y * cos(alpha + 2) + point->z
+		* cos(alpha - 2);
+	point->y = x * (int)sin(alpha) + y * sin(alpha + 2) + point->z
+		* sin(alpha - 2);
+}
+
+void ft_fill_map(t_vars vars, t_line_lst *lines, int i)
+{
+	int			len_x;
+	int			y;
+	int			x;
+	t_line_lst	*tmp;
+	t_point		***map;
+
+	map = vars.map;
+	len_x = 0;
+	y = 0;
+	map = malloc(sizeof(t_point **) * (i + 1));
+	while (lines->split_line[len_x])
+		len_x++;
+	while (lines)
+	{
+		map[y] = malloc(sizeof(t_point *) * (len_x + 1));
+		x = 0;
+		while (x < len_x)
+		{
+			map[y][x] = malloc(sizeof(t_point));
+			map[y][x]->z = ft_atoi(lines->split_line[x]);
+			free(lines->split_line[x]);
+			ft_calc_points(map[y][x], x, y);
+			x++;
+		}
+		if (map [y][x] != NULL)
+		{
+			// ERROR handle gracefully;
+			exit(1);
+		}
+		else
+			free(lines->split_line);
+		y++;
+		tmp = lines;
+		lines = lines->next;
+		free(tmp);
+	}
+}
+
+void	ft_parse_input(t_vars vars, int fd)
+{
+	char		*line;
+	t_line_lst	*lines;
+	t_line_lst	*lines_head;
+	int			i;
+
+	i = 0;
 	line = ft_get_next_line(fd);
+	lines = malloc(sizeof(t_line_lst));
+	lines_head = lines;
 	while (line)
 	{
-		ft_split(line, ' ');
+		lines->split_line = ft_split(line, ' ');
+		lines->next = malloc(sizeof(t_line_lst));
+		lines = lines->next;
+		i++;
 		line = ft_get_next_line(fd);
 	}
+	ft_fill_map(vars, lines_head, i);
 }
 
 int	ft_input_handler(int argc, char **argv, t_vars vars)
@@ -98,14 +173,12 @@ int	ft_input_handler(int argc, char **argv, t_vars vars)
 			exit(1);
 		}
 		else
-			ft_printf("ft_parse_input(%d)\n", fd);
-			ft_parse_input(vars.map, fd);
+			ft_parse_input(vars, fd);
+		close(fd);
 		return (0);
 	}
 	return (0);
 }
-
-
 
 int	main(int argc, char **argv)
 {
