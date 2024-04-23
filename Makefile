@@ -10,7 +10,7 @@ BONUS_NAME =
 # Compiler & COptions & CFlags #
 CFLAGS = -g -Werror -Wall -Wextra -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz
 TESTFLAGS = -g3
-COPTIONS = -Wall -Wextra -I/usr/include -Imlx_linux/ -O3 -c
+COPTIONS = -g -Werror -Wall -Wextra -I/usr/include -Imlx_linux/ -O0 -c
 CC = cc
 # Source Files #
 SRC = src/fdf.c

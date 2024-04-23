@@ -6,7 +6,7 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/04/23 14:53:52 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/04/23 16:40:40 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,7 @@ void ft_fill_map(t_vars vars, t_line_lst *lines, int i)
 		len_x++;
 	while (lines)
 	{
-		map[y] = malloc(sizeof(t_point *) * (len_x + 1));
+		map[y] = malloc(sizeof(t_point *) * (len_x));
 		x = 0;
 		while (x < len_x)
 		{
@@ -123,13 +123,8 @@ void ft_fill_map(t_vars vars, t_line_lst *lines, int i)
 			ft_calc_points(map[y][x], x, y);
 			x++;
 		}
-		if (map [y][x] != NULL)
-		{
-			// ERROR handle gracefully;
-			exit(1);
-		}
-		else
-			free(lines->split_line);
+		map [y][x] = NULL;
+		free(lines->split_line);
 		y++;
 		tmp = lines;
 		lines = lines->next;
@@ -184,6 +179,8 @@ int	main(int argc, char **argv)
 {
 	t_vars	vars;
 	t_data	img;
+
+	vars.img = NULL;
 
 	if (ft_input_handler(argc, argv, vars) == -1)
 	{
