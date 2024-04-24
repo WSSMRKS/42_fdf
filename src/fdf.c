@@ -6,7 +6,7 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/04/24 19:17:03 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/04/24 20:56:20 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,25 @@ typedef struct s_point {
 	int	z;
 }				t_point;
 
+typedef struct s_map_data {
+	int	map_height;
+	int	map_width;
+	int	size_x_max;
+	int	size_y_max;
+	int	size_x_min;
+	int	size_y_min;
+	int	img_width;
+	int	img_height;
+	int	screen_height;
+	int	screen_width;
+}				t_map_data;
+
 typedef struct s_vars {
-	void	*mlx;
-	void	*win;
-	t_data	*img;
-	t_point	**map;
+	void		*mlx;
+	void		*win;
+	t_data		*img;
+	t_point		**map;
+	t_map_data	*map_data;
 }				t_vars;
 
 typedef struct s_line_lst {
@@ -86,18 +100,26 @@ void	init_errors(void)
 	strerror(1);
 }
 
-void	ft_calc_points(t_point point, int x, int y)
+void	ft_calc_points(t_point point, int x, int y, t_vars *vars)
 {
 	float	alpha;
 
 	alpha = 30 * (PI / (float)180);
-	point.x = x * (float)cos(alpha) + y * (float)cos(alpha + 2) + point.z
-		* cos(alpha - 2);
-	point.y = x * (float)sin(alpha) + y * (float)sin(alpha + 2) + point.z
-		* sin(alpha - 2);
+	point.x = 10 * x * (float)cos(alpha) + 10 * y * (float)cos(alpha + 2)
+		+ point.z * cos(alpha - 2);
+	point.y = 10 * x * (float)sin(alpha) + 10 * y * (float)sin(alpha + 2)
+		+ point.z * sin(alpha - 2);
+	if (point.x > vars->map_data->size_x_max)
+		vars->map_data->size_x_max = point.x;
+	if (point.x < vars->map_data->size_x_min)
+		vars->map_data->size_x_min = point.x;
+	if (point.y > vars->map_data->size_y_max)
+		vars->map_data->size_y_max = point.y;
+	if (point.y < vars->map_data->size_y_min)
+		vars->map_data->size_y_min = point.y;
 }
 
-void ft_fill_map(t_vars vars, t_line_lst *lines, int i)
+void ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 {
 	int			len_x;
 	int			y;
@@ -105,12 +127,13 @@ void ft_fill_map(t_vars vars, t_line_lst *lines, int i)
 	t_line_lst	*tmp;
 	t_point		**map;
 
-	map = vars.map;
+	map = vars->map;
 	len_x = 0;
 	y = 0;
 	map = malloc(sizeof(t_point *) * (i + 1));
 	while (lines->split_line[len_x])
 		len_x++;
+	vars->map_data->map_width = len_x;
 	while (lines->split_line)
 	{
 		map[y] = malloc(sizeof(t_point) * (len_x));
@@ -119,7 +142,7 @@ void ft_fill_map(t_vars vars, t_line_lst *lines, int i)
 		{
 			map[y][x].z = ft_atoi(lines->split_line[x]);
 			free(lines->split_line[x]);
-			ft_calc_points(map[y][x], x, y);
+			ft_calc_points(map[y][x], x, y, vars);
 			x++;
 		}
 		free(lines->split_line);
@@ -128,9 +151,10 @@ void ft_fill_map(t_vars vars, t_line_lst *lines, int i)
 		lines = lines->next;
 		free(tmp);
 	}
+	vars->map_data->map_height = y;
 }
 
-void	ft_parse_input(t_vars vars, int fd)
+void	ft_parse_input(t_vars *vars, int fd)
 {
 	char		*line;
 	t_line_lst	*lines;
@@ -152,7 +176,7 @@ void	ft_parse_input(t_vars vars, int fd)
 	ft_fill_map(vars, lines_head, i);
 }
 
-int	ft_input_handler(int argc, char **argv, t_vars vars)
+int	ft_input_handler(int argc, char **argv, t_vars *vars)
 {
 	int	fd;
 	if (argc != 2)
@@ -173,29 +197,68 @@ int	ft_input_handler(int argc, char **argv, t_vars vars)
 	return (0);
 }
 
+void ft_size_map(t_vars *vars)
+{
+	vars->map_data->img_height
+		= vars->map_data->size_y_max - vars->map_data->size_y_min;
+	vars->map_data->img_width
+		= vars->map_data->size_x_max - vars->map_data->size_x_min;
+	vars->map_data->screen_height = vars->map_data->img_height * (float)1.2;
+	vars->map_data->screen_width = vars->map_data->img_width * (float)1.2;
+
+}
+
+in this function run through map and put to screen.
+
+void	ft_draw_map(t_vars *vars)
+{
+	int	x;
+	int	y;
+
+	while (vars->map[y] < vars->map_data->map_width)
+	{
+		while ()
+		my_mlx_pixel_put(&img, 460, 85, 0x00FF0000);
+	}
+	printf("size_x_max: %d\n",vars->map_data->size_x_max);
+	printf("size_x_min: %d\n",vars->map_data->size_x_min);
+	printf("size_y_max: %d\n",vars->map_data->size_y_max);
+	printf("size_y_min: %d\n",vars->map_data->size_y_min);
+}
+
+
 int	main(int argc, char **argv)
 {
 	t_vars	vars;
 	t_data	img;
 
 	vars.img = NULL;
-
-	if (ft_input_handler(argc, argv, vars) == -1)
+	vars.map_data = malloc(sizeof(t_map_data));
+	vars.map_data->size_x_max = 0;
+	vars.map_data->size_x_min = 0;
+	vars.map_data->size_y_max = 0;
+	vars.map_data->size_y_min = 0;
+	if (ft_input_handler(argc, argv, &vars) == -1)
 	{
 		ft_printf_err("Error: Invalid number of arguments.\n");
 		exit(1);
 		return (0);
 	}
+	ft_size_map(&vars);
 	vars.mlx = mlx_init();
-	vars.win = mlx_new_window(vars.mlx, 1280, 570, "Hello world!");
-	img.img = mlx_new_image(vars.mlx, 1280, 570);
+	vars.win = mlx_new_window(vars.mlx, vars.map_data->screen_width,
+			vars.map_data->screen_height, "Hello world!");
+	img.img = mlx_new_image(vars.mlx, vars.map_data->screen_width,
+			vars.map_data->screen_height);
 	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixel,
 			&img.line_length, &img.endian);
-	my_mlx_pixel_put(&img, 460, 85, 0x00FF0000);
-	mlx_put_image_to_window(vars.mlx, vars.win, img.img, 0, 0);
+	ft_draw_map(&vars);
 	vars.img = &img;
+	mlx_put_image_to_window(vars.mlx, vars.win, img.img, 0, 0);
 	mlx_hook(vars.win, 2, 1L << 0, mlx_key_handler, &vars);
 	mlx_hook(vars.win, 17, 1L << 17, mlx_close, &vars);
 	mlx_loop(vars.mlx);
 
 }
+
+// t_point marix[y][x]
