@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   fdf.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/04/24 20:56:20 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/04/25 14:48:56 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,10 +127,10 @@ void ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 	t_line_lst	*tmp;
 	t_point		**map;
 
-	map = vars->map;
+	vars->map = malloc(sizeof(t_point *) * (i + 1));
 	len_x = 0;
 	y = 0;
-	map = malloc(sizeof(t_point *) * (i + 1));
+	map = vars->map;
 	while (lines->split_line[len_x])
 		len_x++;
 	vars->map_data->map_width = len_x;
@@ -208,22 +208,41 @@ void ft_size_map(t_vars *vars)
 
 }
 
-in this function run through map and put to screen.
+// in this function run through map and put to screen.
 
-void	ft_draw_map(t_vars *vars)
+void	ft_draw_map(t_vars *vars, t_data *img)
 {
 	int	x;
 	int	y;
-
-	while (vars->map[y] < vars->map_data->map_width)
+	int x_actual;
+	int y_actual;
+	int aux1;
+	int aux2;
+	int aux3;
+	int aux4;
+	x_actual = 0;
+	y_actual = 0;
+	y = 0;
+	x = 0;
+	aux1 = vars->map_data->screen_width / 2;
+	aux2 = vars->map_data->screen_height / 2;
+	aux3 = vars->map[x][y].x;
+	aux4 = vars->map[x][y].y;
+	ft_printf("aux1: %d\n", aux1);
+	ft_printf("aux2: %d\n", aux2);
+	ft_printf("aux3: %d\n", aux3);
+	ft_printf("aux4: %d\n", aux4);
+	while (y < vars->map_data->map_height)
 	{
-		while ()
-		my_mlx_pixel_put(&img, 460, 85, 0x00FF0000);
+		while (x < vars->map_data->map_width)
+		{
+			x_actual = vars->map[y][x].x + vars->map_data->screen_width / 2;
+			y_actual = vars->map[y][x].y + vars->map_data->screen_height / 2;
+			my_mlx_pixel_put(img, x_actual, y_actual, 0x00FF0000);
+			x++;
+		}
+		y++;
 	}
-	printf("size_x_max: %d\n",vars->map_data->size_x_max);
-	printf("size_x_min: %d\n",vars->map_data->size_x_min);
-	printf("size_y_max: %d\n",vars->map_data->size_y_max);
-	printf("size_y_min: %d\n",vars->map_data->size_y_min);
 }
 
 
@@ -252,7 +271,7 @@ int	main(int argc, char **argv)
 			vars.map_data->screen_height);
 	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixel,
 			&img.line_length, &img.endian);
-	ft_draw_map(&vars);
+	ft_draw_map(&vars, &img);
 	vars.img = &img;
 	mlx_put_image_to_window(vars.mlx, vars.win, img.img, 0, 0);
 	mlx_hook(vars.win, 2, 1L << 0, mlx_key_handler, &vars);
