@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   fdf.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
+/*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/04/25 14:48:56 by wssmrks          ###   ########.fr       */
+/*   Updated: 2024/04/26 20:29:43 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,16 +34,18 @@ typedef struct s_point {
 }				t_point;
 
 typedef struct s_map_data {
-	int	map_height;
-	int	map_width;
-	int	size_x_max;
-	int	size_y_max;
-	int	size_x_min;
-	int	size_y_min;
-	int	img_width;
-	int	img_height;
-	int	screen_height;
-	int	screen_width;
+	int		map_height;
+	int		map_width;
+	int		size_x_max;
+	int		size_y_max;
+	int		size_x_min;
+	int		size_y_min;
+	int		img_width;
+	int		img_height;
+	int		screen_height;
+	int		screen_width;
+	float	raster_x;
+	float	raster_y;
 }				t_map_data;
 
 typedef struct s_vars {
@@ -59,6 +61,16 @@ typedef struct s_line_lst {
 	char		**split_line;
 	void		*next;
 }				t_line_lst;
+
+void	my_mlx_pixel_put(t_data *data, int x, int y, int color);
+void	ft_draw_map(t_vars *vars, t_data *img);
+void	ft_size_map(t_vars *vars);
+int		ft_input_handler(int argc, char **argv, t_vars *vars);
+void	ft_parse_input(t_vars *vars, int fd);
+void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i);
+void	ft_calc_points(int x, int y, t_vars *vars);
+int		mlx_key_handler(int keycode, t_vars *vars);
+int		mlx_close(t_vars *vars);
 
 void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
 {
@@ -95,28 +107,25 @@ int	mlx_key_handler(int keycode, t_vars *vars)
 	return (0);
 }
 
-void	init_errors(void)
-{
-	strerror(1);
-}
-
-void	ft_calc_points(t_point point, int x, int y, t_vars *vars)
+void	ft_calc_points(int x, int y, t_vars *vars)
 {
 	float	alpha;
 
 	alpha = 30 * (PI / (float)180);
-	point.x = 10 * x * (float)cos(alpha) + 10 * y * (float)cos(alpha + 2)
-		+ point.z * cos(alpha - 2);
-	point.y = 10 * x * (float)sin(alpha) + 10 * y * (float)sin(alpha + 2)
-		+ point.z * sin(alpha - 2);
-	if (point.x > vars->map_data->size_x_max)
-		vars->map_data->size_x_max = point.x;
-	if (point.x < vars->map_data->size_x_min)
-		vars->map_data->size_x_min = point.x;
-	if (point.y > vars->map_data->size_y_max)
-		vars->map_data->size_y_max = point.y;
-	if (point.y < vars->map_data->size_y_min)
-		vars->map_data->size_y_min = point.y;
+	vars->map[y][x].x = vars->map_data->raster_x * (10 * x) * (float)cos(alpha)
+		+ vars->map_data->raster_x * (10 * y) * (float)cos(alpha + 2)
+		+ vars->map_data->raster_x * vars->map[y][x].z * cos(alpha - 2);
+	vars->map[y][x].y = vars->map_data->raster_y * (10 * x) * (float)sin(alpha)
+		+ vars->map_data->raster_y * (10 * y) * (float)sin(alpha + 2)
+		+ vars->map_data->raster_y * vars->map[y][x].z * sin(alpha - 2);
+	if (vars->map[y][x].x > vars->map_data->size_x_max)
+		vars->map_data->size_x_max = vars->map[y][x].x;
+	if (vars->map[y][x].x < vars->map_data->size_x_min)
+		vars->map_data->size_x_min = vars->map[y][x].x;
+	if (vars->map[y][x].y > vars->map_data->size_y_max)
+		vars->map_data->size_y_max = vars->map[y][x].y;
+	if (vars->map[y][x].y < vars->map_data->size_y_min)
+		vars->map_data->size_y_min = vars->map[y][x].y;
 }
 
 void ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
@@ -142,7 +151,7 @@ void ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 		{
 			map[y][x].z = ft_atoi(lines->split_line[x]);
 			free(lines->split_line[x]);
-			ft_calc_points(map[y][x], x, y, vars);
+			ft_calc_points(x, y, vars);
 			x++;
 		}
 		free(lines->split_line);
@@ -197,15 +206,50 @@ int	ft_input_handler(int argc, char **argv, t_vars *vars)
 	return (0);
 }
 
+void ft_recalc_map(t_vars *vars)
+{
+	int	x;
+	int	y;
+
+	y = 0;
+	vars->map_data->size_x_max = 0;
+	vars->map_data->size_x_min = 0;
+	vars->map_data->size_y_max = 0;
+	vars->map_data->size_y_min = 0;
+	while (y < vars->map_data->map_height)
+	{
+		x = 0;
+		while (x < vars->map_data->map_width)
+		{
+			ft_calc_points(x, y, vars);
+			x++;
+		}
+		y++;
+	}
+	vars->map_data->img_height
+		= vars->map_data->size_y_max - vars->map_data->size_y_min;
+	vars->map_data->img_width
+		= vars->map_data->size_x_max - vars->map_data->size_x_min;
+}
+
 void ft_size_map(t_vars *vars)
 {
 	vars->map_data->img_height
 		= vars->map_data->size_y_max - vars->map_data->size_y_min;
 	vars->map_data->img_width
 		= vars->map_data->size_x_max - vars->map_data->size_x_min;
-	vars->map_data->screen_height = vars->map_data->img_height * (float)1.2;
-	vars->map_data->screen_width = vars->map_data->img_width * (float)1.2;
-
+	if (vars->map_data->img_width > 1240 || vars->map_data->img_height > 680)
+	{
+		vars->map_data->raster_y = 680 / (float)vars->map_data->img_height;
+		vars->map_data->raster_x = 1240 / (float)vars->map_data->img_width;
+		if (vars->map_data->raster_y > vars->map_data->raster_x)
+			vars->map_data->raster_y = vars->map_data->raster_x;
+		else
+			vars->map_data->raster_x = vars->map_data->raster_y;
+		ft_recalc_map(vars);
+	}
+	vars->map_data->screen_height = vars->map_data->img_height + 40;
+	vars->map_data->screen_width = vars->map_data->img_width + 40;
 }
 
 // in this function run through map and put to screen.
@@ -214,30 +258,21 @@ void	ft_draw_map(t_vars *vars, t_data *img)
 {
 	int	x;
 	int	y;
-	int x_actual;
-	int y_actual;
-	int aux1;
-	int aux2;
-	int aux3;
-	int aux4;
+	int	x_actual;
+	int	y_actual;
+
 	x_actual = 0;
 	y_actual = 0;
 	y = 0;
 	x = 0;
-	aux1 = vars->map_data->screen_width / 2;
-	aux2 = vars->map_data->screen_height / 2;
-	aux3 = vars->map[x][y].x;
-	aux4 = vars->map[x][y].y;
-	ft_printf("aux1: %d\n", aux1);
-	ft_printf("aux2: %d\n", aux2);
-	ft_printf("aux3: %d\n", aux3);
-	ft_printf("aux4: %d\n", aux4);
+
 	while (y < vars->map_data->map_height)
 	{
+		x = 0;
 		while (x < vars->map_data->map_width)
 		{
-			x_actual = vars->map[y][x].x + vars->map_data->screen_width / 2;
-			y_actual = vars->map[y][x].y + vars->map_data->screen_height / 2;
+			x_actual = vars->map[y][x].x + -vars->map_data->size_x_min + 20;
+			y_actual = vars->map[y][x].y + 20;
 			my_mlx_pixel_put(img, x_actual, y_actual, 0x00FF0000);
 			x++;
 		}
@@ -257,6 +292,8 @@ int	main(int argc, char **argv)
 	vars.map_data->size_x_min = 0;
 	vars.map_data->size_y_max = 0;
 	vars.map_data->size_y_min = 0;
+	vars.map_data->raster_x = 1;
+	vars.map_data->raster_y = 1;
 	if (ft_input_handler(argc, argv, &vars) == -1)
 	{
 		ft_printf_err("Error: Invalid number of arguments.\n");
@@ -280,4 +317,13 @@ int	main(int argc, char **argv)
 
 }
 
-// t_point marix[y][x]
+Todo:
+- add input check;
+- add lines;
+- maybe zoom if small;
+- add Header files and enum;
+- valgrind;
+- error Handling;
+- Norminette;
+- Makefile;
+- check against subject;
