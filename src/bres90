@@ -1,0 +1,39 @@
+void	ft_put_bres_90(t_point point1, t_point point2, t_data *img)
+{
+	int	dx;
+	int	dy;
+	int	delta;
+	int	x;
+	int	y;
+	int xi;
+
+	x = 0;
+	y = 0;
+	delta = 0;
+	dx = 0;
+	dy = 0;
+	xi = 1;
+
+	dx = point2.x - point1.x;
+	dy = point2.y - point1.y;
+	if (dx < 0)
+	{
+		xi = -1;
+		dx = -dx;
+	}
+	delta = 2 * dx - dy;
+	y = point1.y;
+	x = point1.x;
+	while (y < point2.y)
+	{
+		if (delta > 0)
+		{
+			x = x + xi;
+			delta = delta + 2 * (dx - dy);
+		}
+		else
+			delta = delta + 2 * dx;
+		my_mlx_pixel_put(img, x, y, 0x00FF0000);
+		y++;
+	}
+}
