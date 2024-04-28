@@ -6,7 +6,7 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/04/26 20:29:43 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/04/28 15:35:27 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,6 +230,8 @@ void ft_recalc_map(t_vars *vars)
 		= vars->map_data->size_y_max - vars->map_data->size_y_min;
 	vars->map_data->img_width
 		= vars->map_data->size_x_max - vars->map_data->size_x_min;
+	vars->map_data->screen_height = vars->map_data->img_height + 40;
+	vars->map_data->screen_width = vars->map_data->img_width + 40;
 }
 
 void ft_size_map(t_vars *vars)
@@ -246,10 +248,17 @@ void ft_size_map(t_vars *vars)
 			vars->map_data->raster_y = vars->map_data->raster_x;
 		else
 			vars->map_data->raster_x = vars->map_data->raster_y;
-		ft_recalc_map(vars);
 	}
-	vars->map_data->screen_height = vars->map_data->img_height + 40;
-	vars->map_data->screen_width = vars->map_data->img_width + 40;
+	else
+	{
+		vars->map_data->raster_y = (float)vars->map_data->img_height * (680 / (float)vars->map_data->img_height);
+		vars->map_data->raster_x = (float)vars->map_data->img_width *(1240 / (float)vars->map_data->img_width);
+		if (vars->map_data->raster_y > vars->map_data->raster_x)
+			vars->map_data->raster_y = vars->map_data->raster_x;
+		else
+			vars->map_data->raster_x = vars->map_data->raster_y;
+	}
+	ft_recalc_map(vars);
 }
 
 // in this function run through map and put to screen.
@@ -316,7 +325,7 @@ int	main(int argc, char **argv)
 	mlx_loop(vars.mlx);
 
 }
-
+/*
 Todo:
 - add input check;
 - add lines;
@@ -327,3 +336,4 @@ Todo:
 - Norminette;
 - Makefile;
 - check against subject;
+*/
