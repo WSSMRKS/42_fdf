@@ -5,3 +5,6 @@
 [submodule "mlx_linux"]
 	path = mlx_linux
 	url = git@github.com:WSSMRKS/mlx_linux.git
+[submodule "42MapGenerator"]
+	path = 42MapGenerator
+	url = https://github.com/jgigault/42MapGenerator.git

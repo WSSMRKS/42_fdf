@@ -6,7 +6,7 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/04/28 19:56:51 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/02 17:14:19 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,10 @@
 #include <fcntl.h>
 #include <math.h>
 #define PI 3.14159265
+#define EDGE 10
+#define WIDTH 1920
+#define HEIGHT 900
+#define Z_SCALE 1
 
 typedef struct s_data {
 	void	*img;
@@ -68,7 +72,7 @@ void	ft_size_map(t_vars *vars);
 int		ft_input_handler(int argc, char **argv, t_vars *vars);
 void	ft_parse_input(t_vars *vars, int fd);
 void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i);
-void	ft_calc_points(int x, int y, t_vars *vars);
+void	ft_calc_points(int x, int y, t_vars *vars, int delta_y);
 int		mlx_key_handler(int keycode, t_vars *vars);
 int		mlx_close(t_vars *vars);
 
@@ -107,7 +111,7 @@ int	mlx_key_handler(int keycode, t_vars *vars)
 	return (0);
 }
 
-void	ft_calc_points(int x, int y, t_vars *vars)
+void	ft_calc_points(int x, int y, t_vars *vars, int delta_y)
 {
 	float	alpha;
 
@@ -115,7 +119,8 @@ void	ft_calc_points(int x, int y, t_vars *vars)
 	vars->map[y][x].x = vars->map_data->raster_x * (10 * x) * (float)cos(alpha)
 		+ vars->map_data->raster_x * (10 * y) * (float)cos(alpha + 2)
 		+ vars->map_data->raster_x * vars->map[y][x].z * cos(alpha - 2);
-	vars->map[y][x].y = vars->map_data->raster_y * (10 * x) * (float)sin(alpha)
+	vars->map[y][x].y = delta_y + vars->map_data->raster_y * (10 * x)
+		* (float)sin(alpha)
 		+ vars->map_data->raster_y * (10 * y) * (float)sin(alpha + 2)
 		+ vars->map_data->raster_y * vars->map[y][x].z * sin(alpha - 2);
 	if (vars->map[y][x].x > vars->map_data->size_x_max)
@@ -149,9 +154,9 @@ void ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 		x = 0;
 		while (x < len_x)
 		{
-			map[y][x].z = ft_atoi(lines->split_line[x]);
+			map[y][x].z = Z_SCALE * ft_atoi(lines->split_line[x]);
 			free(lines->split_line[x]);
-			ft_calc_points(x, y, vars);
+			ft_calc_points(x, y, vars, 0);
 			x++;
 		}
 		free(lines->split_line);
@@ -210,8 +215,10 @@ void ft_recalc_map(t_vars *vars)
 {
 	int	x;
 	int	y;
+	int	delta_y;
 
 	y = 0;
+	delta_y = 0;
 	vars->map_data->size_x_max = 0;
 	vars->map_data->size_x_min = 0;
 	vars->map_data->size_y_max = 0;
@@ -221,17 +228,30 @@ void ft_recalc_map(t_vars *vars)
 		x = 0;
 		while (x < vars->map_data->map_width)
 		{
-			ft_calc_points(x, y, vars);
+			ft_calc_points(x, y, vars, 0);
+			x++;
+		}
+		y++;
+	}
+	if (vars->map_data->size_y_min < 0)
+		delta_y = -vars->map_data->size_y_min;
+	y = 0;
+	while (y < vars->map_data->map_height)
+	{
+		x = 0;
+		while (x < vars->map_data->map_width)
+		{
+			ft_calc_points(x, y, vars, delta_y);
 			x++;
 		}
 		y++;
 	}
 	vars->map_data->img_height
-		= vars->map_data->size_y_max - vars->map_data->size_y_min;
+		= vars->map_data->size_y_max - vars->map_data->size_y_min - delta_y;
 	vars->map_data->img_width
 		= vars->map_data->size_x_max - vars->map_data->size_x_min;
-	vars->map_data->screen_height = vars->map_data->img_height + 40;
-	vars->map_data->screen_width = vars->map_data->img_width + 40;
+	vars->map_data->screen_height = vars->map_data->img_height + EDGE;
+	vars->map_data->screen_width = vars->map_data->img_width + EDGE;
 }
 
 void ft_size_map(t_vars *vars)
@@ -240,10 +260,10 @@ void ft_size_map(t_vars *vars)
 		= vars->map_data->size_y_max - vars->map_data->size_y_min;
 	vars->map_data->img_width
 		= vars->map_data->size_x_max - vars->map_data->size_x_min;
-	if (vars->map_data->img_width > 1240 || vars->map_data->img_height > 680)
+	if (vars->map_data->img_width > (WIDTH - EDGE) || vars->map_data->img_height > HEIGHT)
 	{
-		vars->map_data->raster_y = 680 / (float)vars->map_data->img_height;
-		vars->map_data->raster_x = 1240 / (float)vars->map_data->img_width;
+		vars->map_data->raster_y = (HEIGHT - EDGE) / (float)vars->map_data->img_height;
+		vars->map_data->raster_x = (WIDTH - EDGE) / (float)vars->map_data->img_width;
 		if (vars->map_data->raster_y > vars->map_data->raster_x)
 			vars->map_data->raster_y = vars->map_data->raster_x;
 		else
@@ -251,8 +271,8 @@ void ft_size_map(t_vars *vars)
 	}
 	else
 	{
-		vars->map_data->raster_y = (680 / (float)vars->map_data->img_height);
-		vars->map_data->raster_x = (1240 / (float)vars->map_data->img_width);
+		vars->map_data->raster_y = ((HEIGHT - EDGE) / (float)vars->map_data->img_height);
+		vars->map_data->raster_x = ((WIDTH - EDGE) / (float)vars->map_data->img_width);
 		if (vars->map_data->raster_y > vars->map_data->raster_x)
 			vars->map_data->raster_y = vars->map_data->raster_x;
 		else
@@ -336,6 +356,8 @@ void	ft_put_bres_45(t_point point1, t_point point2, t_data *img)
 		}
 		else
 			delta = delta + 2 * dy;
+		if (x == 0 || y == 0)
+			printf("Values with 00\nx: %d\ny: %d", x, y);
 		my_mlx_pixel_put(img, x, y, 0x00FF0000);
 		x++;
 	}
@@ -376,6 +398,8 @@ void	ft_put_bres_90(t_point point1, t_point point2, t_data *img)
 		}
 		else
 			delta = delta + 2 * dx;
+		if (x == 0 || y == 0)
+			printf("Values with 00\nx: %d\ny: %d", x, y);
 		my_mlx_pixel_put(img, x, y, 0x00FF0000);
 		y++;
 	}
@@ -419,14 +443,14 @@ void	ft_case_bres(t_point point1, t_point point2, t_data *img, t_vars *vars)
 	t_point	act1;
 	t_point	act2;
 
-	act1.x = point1.x + -vars->map_data->size_x_min + 20;
-	act1.y = point1.y + 20;
-	act2.x = point2.x + -vars->map_data->size_x_min + 20;
-	act2.y = point2.y + 20;
+	act1.x = point1.x + -vars->map_data->size_x_min + (EDGE / 2);
+	act1.y = point1.y + (EDGE / 2);
+	act2.x = point2.x + -vars->map_data->size_x_min + (EDGE / 2);
+	act2.y = point2.y + (EDGE / 2);
 
 	if (act1.x == act2.x || act1.y == act2.y)
 		ft_hv_line(act1, act2, img);
-	if (act2.y - act1.y < act2.x - act1.x)
+	if (ft_abs(act2.y - act1.y) < ft_abs(act2.x - act1.x))
 	{
 		if (act1.x > act2.x)
 			ft_put_bres_45(act2, act1, img);
@@ -435,12 +459,41 @@ void	ft_case_bres(t_point point1, t_point point2, t_data *img, t_vars *vars)
 	}
 	else
 	{
-		if (act1.x > act2.x)
-			ft_put_bres_45(act2, act1, img);
+		if (act1.y > act2.y)
+			ft_put_bres_90(act2, act1, img);
 		else
-			ft_put_bres_45(act1, act2, img);
+			ft_put_bres_90(act1, act2, img);
 	}
 }
+
+
+// void	ft_case_bres(t_point point1, t_point point2, t_data *img, t_vars *vars)
+// {
+// 	t_point	act1;
+// 	t_point	act2;
+
+// 	act1.x = point1.x + -vars->map_data->size_x_min + 20;
+// 	act1.y = point1.y + 20;
+// 	act2.x = point2.x + -vars->map_data->size_x_min + 20;
+// 	act2.y = point2.y + 20;
+
+// 	if (act1.x == act2.x || act1.y == act2.y)
+// 		ft_hv_line(act1, act2, img);
+// 	if (act2.y - act1.y < act2.x - act1.x)
+// 	{
+// 		if (act1.x > act2.x)
+// 			ft_put_bres_45(act2, act1, img);
+// 		else
+// 			ft_put_bres_45(act1, act2, img);
+// 	}
+// 	else
+// 	{
+// 		if (act1.x > act2.x)
+// 			ft_put_bres_45(act2, act1, img);
+// 		else
+// 			ft_put_bres_45(act1, act2, img);
+// 	}
+// }
 
 void	ft_bresenham(t_vars *vars, t_data *img)
 {
@@ -482,8 +535,8 @@ void	ft_draw_map(t_vars *vars, t_data *img)
 		x = 0;
 		while (x < vars->map_data->map_width)
 		{
-			x_actual = vars->map[y][x].x + -vars->map_data->size_x_min + 20;
-			y_actual = vars->map[y][x].y + 20;
+			x_actual = vars->map[y][x].x + -vars->map_data->size_x_min + (EDGE / 2);
+			y_actual = vars->map[y][x].y + (EDGE / 2);
 			my_mlx_pixel_put(img, x_actual, y_actual, 0x00FF0000);
 			x++;
 		}
