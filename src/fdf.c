@@ -6,7 +6,7 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/03 14:02:53 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/03 21:49:37 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 #define PI 3.14159265
 #define EDGE 40
 #define WIDTH 1920
-#define HEIGHT 900
+#define HEIGHT 780
 #define Z_SCALE 1
 
 typedef struct s_data {
@@ -85,6 +85,9 @@ int		mlx_key_handler(int keycode, t_vars *vars);
 int		ft_validate_args(t_vars *vars, char *str, int *valid);
 int		mlx_close(t_vars *vars);
 void	my_mlx_pixel_put(t_data *data, int x, int y, int color);
+void	ft_lstdelone_fdf(t_line_lst *lst, void (*del)(void *));
+void	ft_lstclear_fdf(t_line_lst **lst, void (*del)(void *));
+
 
 void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
 {
@@ -92,6 +95,21 @@ void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
 
 	dst = data->addr + (y * data->line_length + x * (data->bits_per_pixel / 8));
 	*(unsigned int *)dst = color;
+}
+
+int	ft_abort(t_vars *vars, int ymax)
+{
+	int			y;
+
+	y = 0;
+	while (y < ymax)
+	{
+		free(vars->map[y++]);
+	}
+	free(vars->map);
+	free(vars->map_data);
+	exit(1);
+	return (0);
 }
 
 int	mlx_close(t_vars *vars)
@@ -189,6 +207,37 @@ void	ft_calc_points(int x, int y, t_vars *vars, int delta_y)
 		vars->map_data->size_y_min = vars->map[y][x].y;
 }
 
+void	ft_lstclear_fdf(t_line_lst **lst, void (*del)(void *))
+{
+	t_line_lst	*tlst;
+	t_line_lst	*nlst;
+
+	if (lst)
+	{
+		tlst = *lst;
+		while (tlst)
+		{
+			nlst = tlst->next;
+			ft_lstdelone_fdf(tlst, (del));
+			tlst = nlst;
+		}
+		*lst = NULL;
+	}
+}
+
+void	ft_lstdelone_fdf(t_line_lst *lst, void (*del)(void *))
+{
+	if (lst)
+	{
+		if (del && lst->line)
+			(del)(lst->line);
+		if (del && lst->split_line)
+			(del)(lst->split_line);
+		free(lst);
+		lst = NULL;
+	}
+}
+
 void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 {
 	int			len_x;
@@ -197,7 +246,7 @@ void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 	t_line_lst	*tmp;
 	t_point		**map;
 
-	vars->map = malloc(sizeof(t_point *) * (i + 1));
+	vars->map = malloc(sizeof(t_point *) * (i));
 	len_x = 0;
 	y = 0;
 	map = vars->map;
@@ -212,9 +261,16 @@ void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 		x = 0;
 		while (x < len_x)
 		{
+			if (!lines->split_line[x])
+			{
+				ft_lstclear_fdf(&lines, free);
+				ft_abort(vars, i);
+				exit(1);
+			}
+			// End Program nice and clean.
 			map[y][x].z = Z_SCALE * ft_validate_args(vars, lines->split_line[x], &vars->map_data->valid);
 			// map[y][x].z = Z_SCALE * ft_atoi(lines->split_line[x]);
-			// [ ] maybe change atoi vs validate args
+			// [x] maybe change atoi vs validate args
 			free(lines->split_line[x]);
 			ft_calc_points(x, y, vars, 0);
 			x++;
@@ -226,6 +282,7 @@ void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 		free(tmp);
 	}
 	free(lines);
+	ft_abort(vars, y);
 	vars->map_data->map_height = y;
 }
 
@@ -277,7 +334,20 @@ int		ft_input_handler(int argc, char **argv, t_vars *vars)
 			exit(1);
 		}
 		else
+		{
+			vars->img = NULL;
+			vars->map_data = malloc(sizeof(t_map_data));
+			vars->map_data->size_x_max = 0;
+			vars->map_data->size_x_min = 0;
+			vars->map_data->size_y_max = 0;
+			vars->map_data->size_y_min = 0;
+			vars->map_data->size_z_max = 0;
+			vars->map_data->size_z_min = 0;
+			vars->map_data->valid = 1;
+			vars->map_data->raster_x = 1;
+			vars->map_data->raster_y = 1;
 			ft_parse_input(vars, fd);
+		}
 		close(fd);
 		return (0);
 	}
@@ -325,6 +395,10 @@ void	ft_recalc_map(t_vars *vars)
 		= vars->map_data->size_y_max - vars->map_data->size_y_min - delta_y;
 	vars->map_data->img_width
 		= vars->map_data->size_x_max - vars->map_data->size_x_min;
+	if (vars->map_data->img_height == 0)
+		vars->map_data->img_height = HEIGHT - EDGE;
+	if (vars->map_data->img_width == 0)
+		vars->map_data->img_width = WIDTH - EDGE;
 	vars->map_data->screen_height = vars->map_data->img_height + EDGE;
 	vars->map_data->screen_width = vars->map_data->img_width + EDGE;
 }
@@ -344,7 +418,7 @@ void	ft_size_map(t_vars *vars)
 		else
 			vars->map_data->raster_x = vars->map_data->raster_y;
 	}
-	else
+	else if (vars->map_data->img_height > 0 && vars->map_data->img_width > 0)
 	{
 		vars->map_data->raster_y = ((HEIGHT - EDGE) / (float)vars->map_data->img_height);
 		vars->map_data->raster_x = ((WIDTH - EDGE) / (float)vars->map_data->img_width);
@@ -559,17 +633,6 @@ int	main(int argc, char **argv)
 	t_vars	vars;
 	t_data	img;
 
-	vars.img = NULL;
-	vars.map_data = malloc(sizeof(t_map_data));
-	vars.map_data->size_x_max = 0;
-	vars.map_data->size_x_min = 0;
-	vars.map_data->size_y_max = 0;
-	vars.map_data->size_y_min = 0;
-	vars.map_data->size_z_max = 0;
-	vars.map_data->size_z_min = 0;
-	vars.map_data->valid = 1;
-	vars.map_data->raster_x = 1;
-	vars.map_data->raster_y = 1;
 	if (ft_input_handler(argc, argv, &vars) == -1)
 	{
 		ft_printf_err("Error: Invalid number of arguments.\n");
