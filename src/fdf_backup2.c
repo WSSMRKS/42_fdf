@@ -6,7 +6,7 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/03 23:43:17 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/03 21:49:37 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,22 +227,12 @@ void	ft_lstclear_fdf(t_line_lst **lst, void (*del)(void *))
 
 void	ft_lstdelone_fdf(t_line_lst *lst, void (*del)(void *))
 {
-	int	i;
-
-	i = 0;
 	if (lst)
 	{
 		if (del && lst->line)
 			(del)(lst->line);
 		if (del && lst->split_line)
-		{
-			if (lst->split_line[i])
-			{
-				while (lst->split_line[i])
-					(del)(lst->split_line[i++]);
-			}
 			(del)(lst->split_line);
-		}
 		free(lst);
 		lst = NULL;
 	}
@@ -274,7 +264,7 @@ void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 			if (!lines->split_line[x])
 			{
 				ft_lstclear_fdf(&lines, free);
-				ft_abort(vars, y + 1);
+				ft_abort(vars, i);
 				exit(1);
 			}
 			// End Program nice and clean.
@@ -327,14 +317,7 @@ void	ft_parse_input(t_vars *vars, int fd)
 		i++;
 		line = ft_get_next_line(fd);
 	}
-	if (lines_head->split_line)
-		ft_fill_map(vars, lines_head, i);
-	else
-	{
-		free(lines);
-		free(vars->map_data);
-		exit(1);
-	}
+	ft_fill_map(vars, lines_head, i);
 }
 
 int		ft_input_handler(int argc, char **argv, t_vars *vars)

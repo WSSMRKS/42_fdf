@@ -8,3 +8,8 @@
 [submodule "42MapGenerator"]
 	path = 42MapGenerator
 	url = https://github.com/jgigault/42MapGenerator.git
+[submodule "fdf_tester"]
+	path = fdf_tester
+	url = git@github.com:WSSMRKS/42_fdf_tester.git
+	branch = main
+	update = rebase
