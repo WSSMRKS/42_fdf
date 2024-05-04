@@ -6,7 +6,7 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/03 23:43:17 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/04 19:08:09 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,7 @@ int	ft_abort(t_vars *vars, int ymax)
 	int			y;
 
 	y = 0;
+	if (vars->map)
 	while (y < ymax)
 	{
 		free(vars->map[y++]);
@@ -238,7 +239,7 @@ void	ft_lstdelone_fdf(t_line_lst *lst, void (*del)(void *))
 		{
 			if (lst->split_line[i])
 			{
-				while (lst->split_line[i])
+				while (lst->split_line[i] != NULL)
 					(del)(lst->split_line[i++]);
 			}
 			(del)(lst->split_line);
@@ -273,6 +274,7 @@ void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 		{
 			if (!lines->split_line[x])
 			{
+				lines->split_line[x] = NULL;
 				ft_lstclear_fdf(&lines, free);
 				ft_abort(vars, y + 1);
 				exit(1);
@@ -282,17 +284,31 @@ void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 			// map[y][x].z = Z_SCALE * ft_atoi(lines->split_line[x]);
 			// [x] maybe change atoi vs validate args
 			free(lines->split_line[x]);
+			lines->split_line[x] = NULL;
 			ft_calc_points(x, y, vars, 0);
 			x++;
+		}
+		if	(lines->split_line[x])
+		{
+			while (lines->split_line[x])
+				free(lines->split_line[x++]);
+			ft_printf_err("Error: Map error.\n");
+			ft_lstclear_fdf(&lines, free);
+			ft_abort(vars, y + 1);
 		}
 		free(lines->split_line);
 		y++;
 		tmp = lines;
 		lines = lines->next;
+
 		free(tmp);
 	}
 	free(lines);
-	ft_abort(vars, y);
+	if(vars->map_data->valid == 0)
+	{
+		ft_printf_err("Error: Map error.\n");
+		ft_abort(vars, y);
+	}
 	vars->map_data->map_height = y;
 }
 
@@ -322,8 +338,8 @@ void	ft_parse_input(t_vars *vars, int fd)
 		lines->split_line = ft_split(line, ' ');
 		free(free_line);
 		lines->next = malloc(sizeof(t_line_lst));
+		ft_init_t_line_lst(lines->next);
 		lines = lines->next;
-		ft_init_t_line_lst(lines);
 		i++;
 		line = ft_get_next_line(fd);
 	}
@@ -337,6 +353,25 @@ void	ft_parse_input(t_vars *vars, int fd)
 	}
 }
 
+void	ft_init_t_map_data(t_map_data *map_data)
+{
+	map_data->size_x_max = 0;
+	map_data->size_x_min = 0;
+	map_data->size_y_max = 0;
+	map_data->size_y_min = 0;
+	map_data->size_z_max = 0;
+	map_data->size_z_min = 0;
+	map_data->valid = 1;
+	map_data->raster_x = 1;
+	map_data->raster_y = 1;
+	map_data->map_height = 1;
+	map_data->map_width = 1;
+	map_data->img_width = 100;
+	map_data->img_height = 100;
+	map_data->screen_height = 100;
+	map_data->screen_width = 100;
+}
+
 int		ft_input_handler(int argc, char **argv, t_vars *vars)
 {
 	int	fd;
@@ -344,25 +379,26 @@ int		ft_input_handler(int argc, char **argv, t_vars *vars)
 		return (-1);
 	else
 	{
+		if (ft_strnstr(argv[1],".fdf", strlen(argv[1])) == NULL)
+		{
+			ft_printf_err("Error: Argument not a '.fdf' file.\n");
+			exit(1);
+		}
 		fd = open(argv[1], O_RDONLY);
 		if (fd < 0)
 		{
-			perror("Error: No such file or directory");
+			ft_printf_err("Error: No such file or directory.\n");
 			exit(1);
 		}
 		else
 		{
 			vars->img = NULL;
 			vars->map_data = malloc(sizeof(t_map_data));
-			vars->map_data->size_x_max = 0;
-			vars->map_data->size_x_min = 0;
-			vars->map_data->size_y_max = 0;
-			vars->map_data->size_y_min = 0;
-			vars->map_data->size_z_max = 0;
-			vars->map_data->size_z_min = 0;
-			vars->map_data->valid = 1;
-			vars->map_data->raster_x = 1;
-			vars->map_data->raster_y = 1;
+			if (!vars->map_data)
+			{
+				ft_abort(vars, 0);
+			}
+			ft_init_t_map_data(vars->map_data);
 			ft_parse_input(vars, fd);
 		}
 		close(fd);
@@ -483,7 +519,7 @@ void	ft_put_bres_45(t_point point1, t_point point2, t_data *img)
 		}
 		else
 			delta = delta + 2 * dy;
-		my_mlx_pixel_put(img, x, y, 0x00FF0000);
+		my_mlx_pixel_put(img, x, y, 0x00FFFFFF);
 		x++;
 	}
 }
@@ -523,7 +559,7 @@ void	ft_put_bres_90(t_point point1, t_point point2, t_data *img)
 		}
 		else
 			delta = delta + 2 * dx;
-		my_mlx_pixel_put(img, x, y, 0x00FF0000);
+		my_mlx_pixel_put(img, x, y, 0x00FFFFFF);
 		y++;
 	}
 }
@@ -540,28 +576,28 @@ void	ft_hv_line(t_point act1, t_point act2, t_data *img)
 		y = act1.y;
 		x = act1.x;
 		while (y < act2.y)
-			my_mlx_pixel_put(img, x, y++, 0x00FF0000);
+			my_mlx_pixel_put(img, x, y++, 0x00FFFFFF);
 	}
 	else if (act1.x == act2.x)
 	{
 		x = act1.x;
 		y = act2.y;
 		while (y < act1.y)
-			my_mlx_pixel_put(img, x, y++, 0x00FF0000);
+			my_mlx_pixel_put(img, x, y++, 0x00FFFFFF);
 	}
 	else if (act1.y == act2.y && act1.x < act2.x)
 	{
 		x = act1.x;
 		y = act1.y;
 		while (x < act2.x)
-			my_mlx_pixel_put(img, x++, y, 0x00FF0000);
+			my_mlx_pixel_put(img, x++, y, 0x00FFFFFF);
 	}
 	else if (act1.y == act2.y)
 	{
 		x = act2.x;
 		y = act1.y;
 		while (x < act1.x)
-			my_mlx_pixel_put(img, x++, y, 0x00FF0000);
+			my_mlx_pixel_put(img, x++, y, 0x00FFFFFF);
 	}
 }
 
@@ -636,7 +672,7 @@ void	ft_draw_map(t_vars *vars, t_data *img)
 		{
 			x_actual = vars->map[y][x].x + -vars->map_data->size_x_min + (EDGE / 2);
 			y_actual = vars->map[y][x].y + (EDGE / 2);
-			my_mlx_pixel_put(img, x_actual, y_actual, 0x00FF0000);
+			my_mlx_pixel_put(img, x_actual, y_actual, 0x00FFFFFF);
 			x++;
 		}
 		y++;
@@ -644,12 +680,23 @@ void	ft_draw_map(t_vars *vars, t_data *img)
 	ft_bresenham(vars, img);
 }
 
+void	ft_init_vars(t_vars *vars)
+{
+	vars->img = NULL;
+	vars->map = NULL;
+	vars->map_data = NULL;
+	vars->mlx = NULL;
+	vars->win = NULL;
+}
+
+
 
 int	main(int argc, char **argv)
 {
 	t_vars	vars;
 	t_data	img;
 
+	ft_init_vars(&vars);
 	if (ft_input_handler(argc, argv, &vars) == -1)
 	{
 		ft_printf_err("Error: Invalid number of arguments.\n");
