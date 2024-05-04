@@ -6,7 +6,7 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/04 22:05:28 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/04 22:39:19 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,13 +41,17 @@ int	main(int argc, char **argv)
 }
 /*
 Todo:
-- add input check;
-- add lines; [x]
-- maybe zoom if small; [x]
-- add Header files and enum;
-- valgrind; [ ]
-- error Handling; [ ]
-- Norminette; [ ]
-- Makefile; [ ]
-- check against subject; [ ]
+[x] add input check;
+[x] add lines;
+[ ] remove tester submodule and makefiles clones;
+[ ] remove mlx_linux submodule and makefiles clones;
+[ ] standardize zoom;
+[ ] add Header files and enum;
+[ ] check propper error handling and exit values
+[ ] valgrind;
+[ ] error Handling;
+[ ] Norminette;
+[ ] untangle functions;
+[ ] Makefile;
+[ ] check against subject;
 */
