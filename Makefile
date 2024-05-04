@@ -1,11 +1,12 @@
 # Directories #
 SRCDIR = src/
-HDRDIR =
-OBJDIR =
+HDRDIR = header/
+OBJDIR = obj/
 LIBFTDIR = libft/
-MLXDIR = mlx_linux
+MLXDIR = mlx_linux/
 # Names #
 NAME = fdf
+# no bonus
 BONUS_NAME =
 # Compiler & COptions & CFlags #
 CFLAGS = -g -Werror -Wall -Wextra -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz
@@ -13,13 +14,10 @@ TESTFLAGS = -g3
 COPTIONS = -g -Werror -Wall -Wextra -I/usr/include -Imlx_linux/ -O0 -c
 CC = cc
 # Source Files #
-SRC = src/fdf.c
-MAIN_SRC =
-BONUS_SRC =
-TEST_SRC =
-HEADERS = mlx.h libft.h
-LIBFT_SRC = libft.a
-# Object Files #remove
+SRC = src/fdf.c src/fdf_clean_closing.c src/fdf_drawing.c src/fdf_init_structs.c src/fdf_mlx.c src/fdf_parsing.c
+HEADERS = fdf.h
+LIBFT_SRC = libft/libft.a
+# Object Files
 SRC_OBJ = $(SRC:.c=.o)
 BONUS_OBJ = $(BONUS_SRC:.c=.o)
 MAIN_OBJ = $(MAIN_SRC:.c=.o)
@@ -33,7 +31,7 @@ all: $(NAME)
 
 fully: $(NAME) bonus
 
-$(NAME): $(LIBFT_SRC) $(SRC_OBJ)
+$(NAME): $(LIBFT_SRC) $(SRC_OBJ) mlx
 	$(CC) $(SRC_OBJ) $(LIBFT_SRC) $(CFLAGS) -o $(NAME)
 
 bonus: $(BONUS_NAME)
@@ -42,14 +40,11 @@ $(BONUS_NAME): $(LIBFT_SRC) $(BONUS_OBJ)
 	$(CC) $(BONUS_OBJ) $(LIBFT_SRC) $(CFLAGS) -o $(BONUS_NAME)
 
 $(LIBFT_SRC):
-  ifeq ("$(wildcard $(LIBFTDIR))", "")
-	echo "Directory does not exist."
-#	git submodule add git@github.com:WSSMRKS/libft.git
-  else
-	echo "Skipping download because directory already exists."
 	$(MAKE) all -C libft/
-	cp -rf libft/libft.h ./
-	cp -rf libft/libft.a ./
+  ifeq ("$(wildcard $(LIBFTDIR))", "")
+	echo "libft: Directory does not exist."
+#	git submodule add -b main git@github.com:WSSMRKS/42_libft.git libft
+  else
   endif
 
 mlx:
@@ -83,6 +78,7 @@ clean:
 	echo "libft: Directory does not exist."
   else
 	$(MAKE) fclean -C libft/
+	$(MAKE) clean -C mlx_linux
 	echo "libft folder cleaned"
   endif
 	rm -f libft.a
@@ -90,6 +86,7 @@ clean:
 
 fclean: clean
 	rm -f $(NAME) $(MAIN_NAME) $(BONUS_NAME)
+#	rm -rf mlx_linux
 	echo "\"$(NAME)\" deleted"
 
 re: fclean all

@@ -1,3 +1,0 @@
-./fdf maps/42.fdf
-
-map present?
