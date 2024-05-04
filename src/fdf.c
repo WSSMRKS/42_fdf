@@ -6,7 +6,7 @@
 /*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/04 19:08:09 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/04 21:27:39 by maweiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,7 +144,7 @@ int		ft_validate_args(t_vars *vars, char *str, int *valid)
 		i++;
 	while (*valid != 0 && str[i] != '\0')
 	{
-		if ((str[i] >= '0' && str[i] <= '9') || str[i] == '\n')
+		if ((str[i] >= '0' && str[i] <= '9') || (str[i] == '\n' && i != 0))
 			i++;
 		else
 			*valid = 0;
@@ -449,9 +449,9 @@ void	ft_recalc_map(t_vars *vars)
 	vars->map_data->img_width
 		= vars->map_data->size_x_max - vars->map_data->size_x_min;
 	if (vars->map_data->img_height == 0)
-		vars->map_data->img_height = HEIGHT - EDGE;
+		vars->map_data->img_height = EDGE;
 	if (vars->map_data->img_width == 0)
-		vars->map_data->img_width = WIDTH - EDGE;
+		vars->map_data->img_width = EDGE;
 	vars->map_data->screen_height = vars->map_data->img_height + EDGE;
 	vars->map_data->screen_width = vars->map_data->img_width + EDGE;
 }
@@ -706,7 +706,7 @@ int	main(int argc, char **argv)
 	ft_size_map(&vars);
 	vars.mlx = mlx_init();
 	vars.win = mlx_new_window(vars.mlx, vars.map_data->screen_width,
-			vars.map_data->screen_height, "Hello world!");
+			vars.map_data->screen_height, "Fil de Fer");
 	img.img = mlx_new_image(vars.mlx, vars.map_data->screen_width,
 			vars.map_data->screen_height);
 	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixel,
@@ -717,7 +717,6 @@ int	main(int argc, char **argv)
 	mlx_hook(vars.win, 2, 1L << 0, mlx_key_handler, &vars);
 	mlx_hook(vars.win, 17, 1L << 17, mlx_close, &vars);
 	mlx_loop(vars.mlx);
-
 }
 /*
 Todo:
