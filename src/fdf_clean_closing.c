@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   fdf_clean_closing.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/04 22:03:46 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/04 22:05:11 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/07 21:40:24 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,11 @@ int	ft_abort(t_vars *vars, int ymax)
 	if (vars->map)
 	{
 		while (y < ymax)
-		{
 			free(vars->map[y++]);
-		}
 		free(vars->map);
 	}
-	free(vars->map_data);
+	if (vars->map_data)
+		free(vars->map_data);
 	exit(1);
 	return (0);
 }
@@ -88,4 +87,18 @@ void	ft_lstdelone_fdf(t_line_lst *lst, void (*del)(void *))
 		free(lst);
 		lst = NULL;
 	}
+}
+
+void	ft_exit_err_msg(char *msg, t_vars *vars)
+{
+	ft_printf_err(msg);
+	if (vars->map_data)
+		free(vars->map_data);
+	exit(EXIT_FAILURE);
+}
+
+void	ft_abort_err_msg(char *msg, t_vars *vars, int ymax)
+{
+	ft_printf_err(msg);
+	ft_abort(vars, ymax);
 }

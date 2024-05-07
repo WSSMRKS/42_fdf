@@ -3,130 +3,124 @@
 /*                                                        :::      ::::::::   */
 /*   fdf_parsing.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/04 22:00:36 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/04 22:03:20 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/07 21:49:16 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../header/fdf.h"
 
-int		ft_input_handler(int argc, char **argv, t_vars *vars)
+int	ft_input_handler(int argc, char **argv, t_vars *vars)
 {
 	int	fd;
+
 	if (argc != 2)
 		return (-1);
 	else
 	{
-		if (ft_strnstr(argv[1],".fdf", strlen(argv[1])) == NULL)
-		{
-			ft_printf_err("Error: Argument not a '.fdf' file.\n");
-			exit(1);
-		}
+		if (ft_strnstr(argv[1], ".fdf", strlen(argv[1])) == NULL)
+			ft_exit_err_msg("Error: Argument not a '.fdf' file.\n", vars);
 		fd = open(argv[1], O_RDONLY);
 		if (fd < 0)
-		{
-			ft_printf_err("Error: No such file or directory.\n");
-			exit(1);
-		}
+			ft_exit_err_msg("Error: No such file or directory.\n", vars);
 		else
 		{
 			vars->img = NULL;
-			vars->map_data = malloc(sizeof(t_map_data));
+			vars->map_data = ft_calloc(sizeof(t_map_data), 1);
 			if (!vars->map_data)
-			{
-				ft_abort(vars, 0);
-			}
+				ft_abort_err_msg("fatal: malloc error.\n", vars, 0);
 			ft_init_t_map_data(vars->map_data);
 			ft_parse_input(vars, fd);
 		}
 		close(fd);
-		return (0);
 	}
 	return (0);
+}
+
+void	ft_malloc_lst(void **lst, t_vars *vars, int ymax)
+{
+	t_line_lst	*tlst;
+
+	tlst = ft_calloc(sizeof(t_line_lst), 1);
+	if (!tlst)
+		ft_abort_err_msg("fatal: malloc error.\n", vars, ymax);
+	ft_init_t_line_lst(tlst);
+	*lst = tlst;
 }
 
 void	ft_parse_input(t_vars *vars, int fd)
 {
 	char		*line;
+	char		*free_line;
 	t_line_lst	*lines;
 	t_line_lst	*lines_head;
 	int			i;
-	char		*free_line;
 
 	i = 0;
 	line = ft_get_next_line(fd);
-	lines = malloc(sizeof(t_line_lst));
-	ft_init_t_line_lst(lines);
+	if (!line)
+		ft_exit_err_msg("Error: Empty file.\n", vars);
+	ft_malloc_lst((void *)&lines, vars, 0);
 	lines_head = lines;
 	while (line)
 	{
 		free_line = line;
 		lines->split_line = ft_split(line, ' ');
 		free(free_line);
-		lines->next = malloc(sizeof(t_line_lst));
-		ft_init_t_line_lst(lines->next);
+		ft_malloc_lst(&lines->next, vars, 0);
 		lines = lines->next;
 		i++;
 		line = ft_get_next_line(fd);
 	}
 	if (lines_head->split_line)
 		ft_fill_map(vars, lines_head, i);
-	else
-	{
-		free(lines);
-		free(vars->map_data);
-		exit(1);
-	}
+}
+
+void	ft_assign_map(t_vars *vars, t_line_lst *lines, int y, int x)
+{
+	
 }
 
 void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 {
-	int			len_x;
 	int			y;
 	int			x;
 	t_line_lst	*tmp;
-	t_point		**map;
 
-	vars->map = malloc(sizeof(t_point *) * (i));
-	len_x = 0;
+	vars->map = ft_calloc(sizeof(t_point *), i);
+	if (!vars->map)
+		ft_abort_err_msg("fatal: malloc error.\n", vars, 0);
 	y = 0;
-	map = vars->map;
-	while (lines->split_line[len_x])
-		len_x++;
-	// ft_validate_args(vars, lines->split_line[len_x++], &vars->map_data->valid);
-	// [ ] add procedure for invalid map;
-	vars->map_data->map_width = len_x;
+	x = 0;
+	while (lines->split_line[x])
+		x++;
+	vars->map_data->map_width = x;
 	while (lines && lines->split_line)
 	{
-		map[y] = malloc(sizeof(t_point) * (len_x));
+		ft_assign_map(vars, lines, y, x);
+		vars->map[y] = ft_calloc(sizeof(t_point), vars->map_data->map_width);
+		if (!vars->map[y])
+			ft_abort_err_msg("fatal: malloc error.\n", vars, y);
 		x = 0;
-		while (x < len_x)
+		while (x < vars->map_data->map_width)
 		{
 			if (!lines->split_line[x])
-			{
-				lines->split_line[x] = NULL;
-				ft_lstclear_fdf(&lines, free);
-				ft_abort(vars, y + 1);
-				exit(1);
-			}
-			// End Program nice and clean.
-			map[y][x].z = Z_SCALE * ft_validate_args(vars, lines->split_line[x], &vars->map_data->valid);
-			// map[y][x].z = Z_SCALE * ft_atoi(lines->split_line[x]);
-			// [x] maybe change atoi vs validate args
+				break ;	
+			vars->map[y][x].z = Z_SCALE * ft_validate_args(vars,
+					lines->split_line[x], &vars->map_data->valid);
 			free(lines->split_line[x]);
 			lines->split_line[x] = NULL;
 			ft_calc_points(x, y, vars, 0);
 			x++;
 		}
-		if	(lines->split_line[x])
+		if (lines->split_line[x] || x < vars->map_data->map_width)
 		{
 			while (lines->split_line[x])
 				free(lines->split_line[x++]);
-			ft_printf_err("Error: Map error.\n");
 			ft_lstclear_fdf(&lines, free);
-			ft_abort(vars, y + 1);
+			ft_abort_err_msg("Error: Map error.\n", vars, y + 1);
 		}
 		free(lines->split_line);
 		y++;
@@ -136,10 +130,7 @@ void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 	}
 	free(lines);
 	if(vars->map_data->valid == 0)
-	{
-		ft_printf_err("Error: Map error.\n");
-		ft_abort(vars, y);
-	}
+		ft_abort_err_msg("Error: Map error.\n", vars, y);
 	vars->map_data->map_height = y;
 }
 

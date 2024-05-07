@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   fdf.h                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/04 21:38:00 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/04 22:17:54 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/07 21:40:44 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,8 @@ int		mlx_close(t_vars *vars);
 void	ft_lstdelone_fdf(t_line_lst *lst, void (*del)(void *));
 void	ft_lstclear_fdf(t_line_lst **lst, void (*del)(void *));
 int		ft_abort(t_vars *vars, int ymax);
+void	ft_abort_err_msg(char *msg, t_vars *vars, int ymax);
+void	ft_exit_err_msg(char *msg, t_vars *vars);
 
 // init structs
 void	ft_init_t_line_lst(t_line_lst *lines);
