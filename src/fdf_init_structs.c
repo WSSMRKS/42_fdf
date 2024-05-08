@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   fdf_init_structs.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/04 22:05:31 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/04 22:05:59 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/07 23:04:30 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,30 +19,30 @@ void	ft_init_t_line_lst(t_line_lst *lines)
 	lines->next = NULL;
 }
 
-void	ft_init_t_map_data(t_map_data *map_data)
+void	ft_init_t_m_dat(t_m_dat *m_dat)
 {
-	map_data->size_x_max = 0;
-	map_data->size_x_min = 0;
-	map_data->size_y_max = 0;
-	map_data->size_y_min = 0;
-	map_data->size_z_max = 0;
-	map_data->size_z_min = 0;
-	map_data->valid = 1;
-	map_data->raster_x = 1;
-	map_data->raster_y = 1;
-	map_data->map_height = 1;
-	map_data->map_width = 1;
-	map_data->img_width = 100;
-	map_data->img_height = 100;
-	map_data->screen_height = 100;
-	map_data->screen_width = 100;
+	m_dat->x_max = 0;
+	m_dat->x_min = 0;
+	m_dat->y_max = 0;
+	m_dat->y_min = 0;
+	m_dat->z_max = 0;
+	m_dat->z_min = 0;
+	m_dat->valid = 1;
+	m_dat->raster_x = 1;
+	m_dat->raster_y = 1;
+	m_dat->map_height = 1;
+	m_dat->map_width = 1;
+	m_dat->img_w = 100;
+	m_dat->img_h = 100;
+	m_dat->screen_height = 100;
+	m_dat->screen_width = 100;
 }
 
 void	ft_init_vars(t_vars *vars)
 {
 	vars->img = NULL;
 	vars->map = NULL;
-	vars->map_data = NULL;
+	vars->m_dat = NULL;
 	vars->mlx = NULL;
 	vars->win = NULL;
 }

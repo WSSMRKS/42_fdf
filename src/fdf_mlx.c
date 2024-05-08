@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   fdf_mlx.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/04 21:59:14 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/04 22:00:15 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/07 22:26:51 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,12 +32,12 @@ int	mlx_key_handler(int keycode, t_vars *vars)
 		mlx_destroy_image(vars->mlx, vars->img->img);
 		mlx_destroy_display(vars->mlx);
 		free(vars->mlx);
-		while (y < vars->map_data->map_height)
+		while (y < vars->m_dat->map_height)
 		{
 			free(vars->map[y++]);
 		}
 		free(vars->map);
-		free(vars->map_data);
+		free(vars->m_dat);
 		exit(1);
 	}
 	old_key = keycode;

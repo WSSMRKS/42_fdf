@@ -6,7 +6,7 @@
 /*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/04 22:00:36 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/07 21:49:16 by wssmrks          ###   ########.fr       */
+/*   Updated: 2024/05/07 23:21:35 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,10 @@ int	ft_input_handler(int argc, char **argv, t_vars *vars)
 		else
 		{
 			vars->img = NULL;
-			vars->map_data = ft_calloc(sizeof(t_map_data), 1);
-			if (!vars->map_data)
+			vars->m_dat = ft_calloc(sizeof(t_m_dat), 1);
+			if (!vars->m_dat)
 				ft_abort_err_msg("fatal: malloc error.\n", vars, 0);
-			ft_init_t_map_data(vars->map_data);
+			ft_init_t_m_dat(vars->m_dat);
 			ft_parse_input(vars, fd);
 		}
 		close(fd);
@@ -78,9 +78,32 @@ void	ft_parse_input(t_vars *vars, int fd)
 		ft_fill_map(vars, lines_head, i);
 }
 
-void	ft_assign_map(t_vars *vars, t_line_lst *lines, int y, int x)
+void	ft_assign_arg_map(t_vars *vars, t_line_lst *lines, int y, int x)
 {
-	
+	vars->map[y] = ft_calloc(sizeof(t_point), vars->m_dat->map_width);
+	if (!vars->map[y])
+		ft_abort_err_msg("fatal: malloc error.\n", vars, y);
+	x = 0;
+	while (x < vars->m_dat->map_width)
+	{
+		if (!lines->split_line[x])
+			break ;
+		vars->map[y][x].z = Z_SCALE
+			* ft_validate_args(lines->split_line[x], &vars->m_dat->valid);
+		if (vars->map[y][x].z < vars->m_dat->z_min)
+			vars->m_dat->z_min = vars->map[y][x].z;
+		free(lines->split_line[x]);
+		lines->split_line[x] = NULL;
+		ft_calc_points(x, y, vars, 0);
+		x++;
+	}
+	if (lines->split_line[x] || x < vars->m_dat->map_width)
+	{
+		while (lines->split_line[x])
+			free(lines->split_line[x++]);
+		ft_lstclear_fdf(&lines, free);
+		ft_abort_err_msg("Error: Map error.\n", vars, y + 1);
+	}
 }
 
 void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
@@ -96,32 +119,10 @@ void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 	x = 0;
 	while (lines->split_line[x])
 		x++;
-	vars->map_data->map_width = x;
+	vars->m_dat->map_width = x;
 	while (lines && lines->split_line)
 	{
-		ft_assign_map(vars, lines, y, x);
-		vars->map[y] = ft_calloc(sizeof(t_point), vars->map_data->map_width);
-		if (!vars->map[y])
-			ft_abort_err_msg("fatal: malloc error.\n", vars, y);
-		x = 0;
-		while (x < vars->map_data->map_width)
-		{
-			if (!lines->split_line[x])
-				break ;	
-			vars->map[y][x].z = Z_SCALE * ft_validate_args(vars,
-					lines->split_line[x], &vars->map_data->valid);
-			free(lines->split_line[x]);
-			lines->split_line[x] = NULL;
-			ft_calc_points(x, y, vars, 0);
-			x++;
-		}
-		if (lines->split_line[x] || x < vars->map_data->map_width)
-		{
-			while (lines->split_line[x])
-				free(lines->split_line[x++]);
-			ft_lstclear_fdf(&lines, free);
-			ft_abort_err_msg("Error: Map error.\n", vars, y + 1);
-		}
+		ft_assign_arg_map(vars, lines, y, x);
 		free(lines->split_line);
 		y++;
 		tmp = lines;
@@ -129,12 +130,12 @@ void	ft_fill_map(t_vars *vars, t_line_lst *lines, int i)
 		free(tmp);
 	}
 	free(lines);
-	if(vars->map_data->valid == 0)
+	if (vars->m_dat->valid == 0)
 		ft_abort_err_msg("Error: Map error.\n", vars, y);
-	vars->map_data->map_height = y;
+	vars->m_dat->map_height = y;
 }
 
-int		ft_validate_args(t_vars *vars, char *str, int *valid)
+int	ft_validate_args(char *str, int *valid)
 {
 	int		i;
 	long	nbr;
@@ -145,24 +146,17 @@ int		ft_validate_args(t_vars *vars, char *str, int *valid)
 		*valid = 0;
 	if (*valid != 0 && str[i] == '-')
 		i++;
-	while (*valid != 0 && str[i] != '\0')
-	{
-		if ((str[i] >= '0' && str[i] <= '9') || (str[i] == '\n' && i != 0))
-			i++;
-		else
-			*valid = 0;
-	}
+	while (*valid != 0 && str[i] != '\0' && ((str[i] >= '0' && str[i] <= '9')
+			|| (str[i] == '\n' && str [i + 1] == '\0' && i != 0)))
+		i++;
+	if (str[i] != '\0')
+		*valid = 0;
 	if (valid != 0)
 		nbr = ft_atol(str);
-	if (valid != 0 && str[i] == '\0' && i <= 11 && nbr >= -2147483648
-		&& nbr <= 2147483647)
-	{
-		if (nbr < vars->map_data->size_z_min)
-			vars->map_data->size_z_min = nbr;
+	if (valid != 0 && str[i] == '\0' && i <= 11 && nbr >= INT_MIN
+		&& nbr <= INT_MAX)
 		return ((int) nbr);
-	}
-	else
-		return (*valid = 0);
+	return (0);
 }
 
 void	ft_calc_points(int x, int y, t_vars *vars, int delta_y)
@@ -170,46 +164,47 @@ void	ft_calc_points(int x, int y, t_vars *vars, int delta_y)
 	float	alpha;
 
 	alpha = 30 * (PI / (float)180);
-	vars->map[y][x].x = vars->map_data->raster_x * (10 * x) * (float)cos(alpha)
-		+ vars->map_data->raster_x * (10 * y) * (float)cos(alpha + 2)
-		+ vars->map_data->raster_x * vars->map[y][x].z * cos(alpha - 2);
-	vars->map[y][x].y = delta_y + vars->map_data->raster_y * (10 * x)
+	vars->map[y][x].x = vars->m_dat->raster_x * (10 * x) * (float)cos(alpha)
+		+ vars->m_dat->raster_x * (10 * y) * (float)cos(alpha + 2)
+		+ vars->m_dat->raster_x * vars->map[y][x].z * cos(alpha - 2);
+	vars->map[y][x].y = delta_y + vars->m_dat->raster_y * (10 * x)
 		* (float)sin(alpha)
-		+ vars->map_data->raster_y * (10 * y) * (float)sin(alpha + 2)
-		+ vars->map_data->raster_y * vars->map[y][x].z * sin(alpha - 2);
-	if (vars->map[y][x].x > vars->map_data->size_x_max)
-		vars->map_data->size_x_max = vars->map[y][x].x;
-	if (vars->map[y][x].x < vars->map_data->size_x_min)
-		vars->map_data->size_x_min = vars->map[y][x].x;
-	if (vars->map[y][x].y > vars->map_data->size_y_max)
-		vars->map_data->size_y_max = vars->map[y][x].y;
-	if (vars->map[y][x].y < vars->map_data->size_y_min)
-		vars->map_data->size_y_min = vars->map[y][x].y;
+		+ vars->m_dat->raster_y * (10 * y) * (float)sin(alpha + 2)
+		+ vars->m_dat->raster_y * vars->map[y][x].z * sin(alpha - 2);
+	if (vars->map[y][x].x > vars->m_dat->x_max)
+		vars->m_dat->x_max = vars->map[y][x].x;
+	if (vars->map[y][x].x < vars->m_dat->x_min)
+		vars->m_dat->x_min = vars->map[y][x].x;
+	if (vars->map[y][x].y > vars->m_dat->y_max)
+		vars->m_dat->y_max = vars->map[y][x].y;
+	if (vars->map[y][x].y < vars->m_dat->y_min)
+		vars->m_dat->y_min = vars->map[y][x].y;
 }
 
 void	ft_size_map(t_vars *vars)
 {
-	vars->map_data->img_height
-		= vars->map_data->size_y_max - vars->map_data->size_y_min;
-	vars->map_data->img_width
-		= vars->map_data->size_x_max - vars->map_data->size_x_min;
-	if (vars->map_data->img_width > (WIDTH - EDGE) || vars->map_data->img_height > HEIGHT)
+	vars->m_dat->img_h
+		= vars->m_dat->y_max - vars->m_dat->y_min;
+	vars->m_dat->img_w
+		= vars->m_dat->x_max - vars->m_dat->x_min;
+	if (vars->m_dat->img_w > (WIDTH - EDGE)
+		|| vars->m_dat->img_h > HEIGHT)
 	{
-		vars->map_data->raster_y = (HEIGHT - EDGE) / (float)vars->map_data->img_height;
-		vars->map_data->raster_x = (WIDTH - EDGE) / (float)vars->map_data->img_width;
-		if (vars->map_data->raster_y > vars->map_data->raster_x)
-			vars->map_data->raster_y = vars->map_data->raster_x;
+		vars->m_dat->raster_y = (HEIGHT - EDGE) / (float)vars->m_dat->img_h;
+		vars->m_dat->raster_x = (WIDTH - EDGE) / (float)vars->m_dat->img_w;
+		if (vars->m_dat->raster_y > vars->m_dat->raster_x)
+			vars->m_dat->raster_y = vars->m_dat->raster_x;
 		else
-			vars->map_data->raster_x = vars->map_data->raster_y;
+			vars->m_dat->raster_x = vars->m_dat->raster_y;
 	}
-	else if (vars->map_data->img_height > 0 && vars->map_data->img_width > 0)
+	else if (vars->m_dat->img_h > 0 && vars->m_dat->img_w > 0)
 	{
-		vars->map_data->raster_y = ((HEIGHT - EDGE) / (float)vars->map_data->img_height);
-		vars->map_data->raster_x = ((WIDTH - EDGE) / (float)vars->map_data->img_width);
-		if (vars->map_data->raster_y > vars->map_data->raster_x)
-			vars->map_data->raster_y = vars->map_data->raster_x;
+		vars->m_dat->raster_y = ((HEIGHT - EDGE) / (float)vars->m_dat->img_h);
+		vars->m_dat->raster_x = ((WIDTH - EDGE) / (float)vars->m_dat->img_w);
+		if (vars->m_dat->raster_y > vars->m_dat->raster_x)
+			vars->m_dat->raster_y = vars->m_dat->raster_x;
 		else
-			vars->map_data->raster_x = vars->map_data->raster_y;
+			vars->m_dat->raster_x = vars->m_dat->raster_y;
 	}
 	ft_recalc_map(vars);
 }
@@ -222,43 +217,42 @@ void	ft_recalc_map(t_vars *vars)
 
 	y = 0;
 	delta_y = 0;
-	vars->map_data->size_x_max = 0;
-	vars->map_data->size_x_min = 0;
-	vars->map_data->size_y_max = 0;
-	vars->map_data->size_y_min = 0;
-	while (y < vars->map_data->map_height)
+	vars->m_dat->x_max = 0;
+	vars->m_dat->x_min = 0;
+	vars->m_dat->y_max = 0;
+	vars->m_dat->y_min = 0;
+	while (y < vars->m_dat->map_height)
 	{
 		x = 0;
-		while (x < vars->map_data->map_width)
+		while (x < vars->m_dat->map_width)
 		{
-			if (vars->map_data->size_z_min < 0)
-				vars->map[y][x].z = vars->map[y][x].z + abs(vars->map_data->size_z_min);
+			if (vars->m_dat->z_min < 0)
+				vars->map[y][x].z = vars->map[y][x].z + abs(vars->m_dat->z_min);
 			ft_calc_points(x, y, vars, 0);
 			x++;
 		}
 		y++;
 	}
-	if (vars->map_data->size_y_min < 0)
-		delta_y = -vars->map_data->size_y_min;
 	y = 0;
-	while (y < vars->map_data->map_height)
+	delta_y = abs(vars->m_dat->y_min);
+	while (y < vars->m_dat->map_height)
 	{
 		x = 0;
-		while (x < vars->map_data->map_width)
+		while (x < vars->m_dat->map_width)
 		{
 			ft_calc_points(x, y, vars, delta_y);
 			x++;
 		}
 		y++;
 	}
-	vars->map_data->img_height
-		= vars->map_data->size_y_max - vars->map_data->size_y_min - delta_y;
-	vars->map_data->img_width
-		= vars->map_data->size_x_max - vars->map_data->size_x_min;
-	if (vars->map_data->img_height == 0)
-		vars->map_data->img_height = EDGE;
-	if (vars->map_data->img_width == 0)
-		vars->map_data->img_width = EDGE;
-	vars->map_data->screen_height = vars->map_data->img_height + EDGE;
-	vars->map_data->screen_width = vars->map_data->img_width + EDGE;
+	vars->m_dat->img_h
+		= vars->m_dat->y_max - vars->m_dat->y_min - delta_y;
+	vars->m_dat->img_w
+		= vars->m_dat->x_max - vars->m_dat->x_min;
+	if (vars->m_dat->img_h == 0)
+		vars->m_dat->img_h = EDGE;
+	if (vars->m_dat->img_w == 0)
+		vars->m_dat->img_w = EDGE;
+	vars->m_dat->screen_height = vars->m_dat->img_h + EDGE;
+	vars->m_dat->screen_width = vars->m_dat->img_w + EDGE;
 }

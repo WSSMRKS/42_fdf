@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   fdf_drawing.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maweiss <maweiss@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/04 21:55:20 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/04 21:57:33 by maweiss          ###   ########.fr       */
+/*   Updated: 2024/05/07 23:04:30 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,12 @@ void	ft_draw_map(t_vars *vars, t_data *img)
 	y = 0;
 	x = 0;
 
-	while (y < vars->map_data->map_height)
+	while (y < vars->m_dat->map_height)
 	{
 		x = 0;
-		while (x < vars->map_data->map_width)
+		while (x < vars->m_dat->map_width)
 		{
-			x_actual = vars->map[y][x].x + -vars->map_data->size_x_min + (EDGE / 2);
+			x_actual = vars->map[y][x].x + -vars->m_dat->x_min + (EDGE / 2);
 			y_actual = vars->map[y][x].y + (EDGE / 2);
 			my_mlx_pixel_put(img, x_actual, y_actual, 0x00FFFFFF);
 			x++;
@@ -46,14 +46,14 @@ void	ft_bresenham(t_vars *vars, t_data *img)
 
 	y = 0;
 	x = 0;
-	while (y < vars->map_data->map_height)
+	while (y < vars->m_dat->map_height)
 	{
 		x = 0;
-		while (x < vars->map_data->map_width)
+		while (x < vars->m_dat->map_width)
 		{
-			if (x + 1 < vars->map_data->map_width)
+			if (x + 1 < vars->m_dat->map_width)
 				ft_case_bres(vars->map[y][x], vars->map[y][x + 1], img, vars);
-			if (y + 1 < vars->map_data->map_height)
+			if (y + 1 < vars->m_dat->map_height)
 				ft_case_bres(vars->map[y][x], vars->map[y + 1][x], img, vars);
 			x++;
 		}
@@ -66,9 +66,9 @@ void	ft_case_bres(t_point point1, t_point point2, t_data *img, t_vars *vars)
 	t_point	act1;
 	t_point	act2;
 
-	act1.x = point1.x + -vars->map_data->size_x_min + (EDGE / 2);
+	act1.x = point1.x + -vars->m_dat->x_min + (EDGE / 2);
 	act1.y = point1.y + (EDGE / 2);
-	act2.x = point2.x + -vars->map_data->size_x_min + (EDGE / 2);
+	act2.x = point2.x + -vars->m_dat->x_min + (EDGE / 2);
 	act2.y = point2.y + (EDGE / 2);
 
 	// if (act1.x == act2.x || act1.y == act2.y)
