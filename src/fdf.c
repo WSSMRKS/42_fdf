@@ -6,7 +6,7 @@
 /*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/09 01:48:01 by wssmrks          ###   ########.fr       */
+/*   Updated: 2024/05/09 03:07:15 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,20 +39,3 @@ int	main(int argc, char **argv)
 	mlx_hook(vars.win, 17, 1L << 17, ft_mlx_close, &vars);
 	mlx_loop(vars.mlx);
 }
-
-/*
-Todo:
-[x] add input check;
-[x] add lines;
-[ ] remove tester submodule and make makefiles clone;
-[ ] remove mlx_linux submodule and makefiles clones;
-[x] standardize zoom;
-[x] add Header files and enum;
-[x] check propper error handling and exit values
-[x] valgrind;
-[x] error Handling;
-[x] Norminette;
-[x] untangle functions;
-[ ] Makefile;
-[ ] check against subject;
-*/
