@@ -21,14 +21,11 @@ SRC_OBJ = $(SRC:.c=.o)
 BONUS_OBJ = $(BONUS_SRC:.c=.o)
 MAIN_OBJ = $(MAIN_SRC:.c=.o)
 TEST_OBJ = $(TEST_SRC:.c=.o)
-# Tester directorys #
-# No Tester yet
-TESTDIR =
 
 # Targets #
 all: $(NAME)
 
-$(NAME): $(LIBFT_SRC) $(SRC_OBJ) mlx
+$(NAME): mlx $(LIBFT_SRC) $(SRC_OBJ)
 	$(CC) $(SRC_OBJ) $(LIBFT_SRC) $(CFLAGS) -o $(NAME)
 
 $(LIBFT_SRC):
@@ -53,7 +50,7 @@ exes: $(NAME) clean
 
 # Checkers, Testers #
 test:
-	bash fdf_tester/test.sh
+	bash fdf_tester/tester.sh
 dl_tester:
 	git clone git@github.com:WSSMRKS/42_fdf_tester.git fdf_tester
 
@@ -70,12 +67,11 @@ clean:
 	$(MAKE) clean -C mlx_linux
 	echo "libft folder cleaned"
   endif
-	rm -f libft.a
-	rm -f libft.h
 
 fclean: clean
 	rm -f $(NAME) $(MAIN_NAME) $(BONUS_NAME)
-#	rm -rf mlx_linux
+	rm -rf mlx_linux
+	rm -rf fdf_tester
 	echo "\"$(NAME)\" deleted"
 
 re: fclean all
