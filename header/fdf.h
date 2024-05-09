@@ -6,14 +6,14 @@
 /*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/04 21:38:00 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/09 01:43:55 by wssmrks          ###   ########.fr       */
+/*   Updated: 2024/05/09 02:11:05 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FDF_H
 # define FDF_H
 
-# include "fdf_definitions.h"
+# include "fdf_defines.h"
 # include "fdf_includes.h"
 
 typedef enum e_bool {
