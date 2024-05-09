@@ -1,8 +1,8 @@
 # Directories #
 SRCDIR = src/
 HDRDIR = header/
-LIBFTDIR = libft/
-MLXDIR = mlx_linux/
+LIBFTDIR = libft
+MLXDIR = mlx_linux
 # Names #
 NAME = fdf
 # no bonus
@@ -64,8 +64,13 @@ clean:
 	echo "libft: Directory does not exist."
   else
 	$(MAKE) fclean -C libft/
-	$(MAKE) clean -C mlx_linux
 	echo "libft folder cleaned"
+  endif
+  ifeq ("$(wildcard $(MLXDIR))", "")
+	echo "mlx_linux: Directory does not exist."
+  else
+	$(MAKE) clean -C mlx_linux
+	echo "mlx_linux folder cleaned"
   endif
 
 fclean: clean
