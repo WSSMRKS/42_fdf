@@ -1,6 +1,7 @@
 # Directories #
 SRCDIR = src/
 HDRDIR = header/
+OBJDIR = obj/
 LIBFTDIR = libft/
 MLXDIR = mlx_linux/
 # Names #
@@ -14,7 +15,7 @@ COPTIONS = -g -Werror -Wall -Wextra -I/usr/include -Imlx_linux/ -O0 -c
 CC = cc
 # Source Files #
 SRC = src/fdf.c src/fdf_clean_closing.c src/fdf_drawing.c src/fdf_init_structs.c src/fdf_mlx.c src/fdf_parsing.c src/fdf_parsing2.c
-HEADERS = fdf.h fdf_defines.h fdf_includes.h
+HEADERS = fdf.h
 LIBFT_SRC = libft/libft.a
 # Object Files
 SRC_OBJ = $(SRC:.c=.o)
@@ -28,34 +29,44 @@ TESTDIR =
 # Targets #
 all: $(NAME)
 
+fully: $(NAME) bonus
+
 $(NAME): $(LIBFT_SRC) $(SRC_OBJ) mlx
 	$(CC) $(SRC_OBJ) $(LIBFT_SRC) $(CFLAGS) -o $(NAME)
 
+bonus: $(BONUS_NAME)
+
+$(BONUS_NAME): $(LIBFT_SRC) $(BONUS_OBJ)
+	$(CC) $(BONUS_OBJ) $(LIBFT_SRC) $(CFLAGS) -o $(BONUS_NAME)
+
 $(LIBFT_SRC):
 	$(MAKE) all -C libft/
+  ifeq ("$(wildcard $(LIBFTDIR))", "")
+	echo "libft: Directory does not exist."
+#	git submodule add -b main git@github.com:WSSMRKS/42_libft.git libft
+  else
+  endif
 
 mlx:
   ifeq ("$(wildcard $(MLXDIR))", "")
 	echo "Directory does not exist."
-	echo "Downloading mlx_linux."
-	git clone git@github.com:WSSMRKS/mlx_linux.git
-	$(MAKE) all -C mlx_linux/
+#	git submodule add git@github.com:WSSMRKS/libft.git
   else
-	echo "Skipping download because mlx_linux already exists."
+	echo "Skipping download because directory already exists."
 	$(MAKE) all -C mlx_linux/
   endif
 
-exes: $(NAME) clean
+exes: $(NAME) bonus clean
+
+ex: $(NAME) clean
+
+ex_bonus: bonus clean
 
 # Compile .c to .o #
 %.o: %.c
 	$(CC) $^ $(COPTIONS) -o $@
 
 # Checkers, Testers #
-test:
-	bash fdf_tester/test.sh
-dl_tester:
-	git clone git@github.com:WSSMRKS/42_fdf_tester.git fdf_tester
 
 # clean, fclean, re
 clean:
@@ -86,12 +97,9 @@ name:
 help:
 	echo "Possible Commands:"
 	echo "all --> Compile whole project including bonus"
+	echo "fully --> Compile whole project including bonus and testers"
 	echo "name --> Display project name"
-	echo "exes --> Compile project and delete object files"
-	echo "help --> Display this help message"
-	echo "mlx --> Download mlx_linux library"
-	echo "dl_tester --> Download the tester"
-	echo "test --> Run all available tests"
+	echo "bonus --> Compile bonus"
 	echo "test --> run all available tests"
 	echo "clean --> Delete all object files"
 	echo "fclean --> Delete everything besides source files"

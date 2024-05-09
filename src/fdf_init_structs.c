@@ -6,7 +6,7 @@
 /*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/04 22:05:31 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/07 23:04:30 by wssmrks          ###   ########.fr       */
+/*   Updated: 2024/05/09 00:42:25 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,4 +45,15 @@ void	ft_init_vars(t_vars *vars)
 	vars->m_dat = NULL;
 	vars->mlx = NULL;
 	vars->win = NULL;
+}
+
+void	ft_init_bres(t_bresenham *bres)
+{
+	bres->x = 0;
+	bres->y = 0;
+	bres->delta = 0;
+	bres->dx = 0;
+	bres->dy = 0;
+	bres->yi = 1;
+	bres->xi = 1;
 }

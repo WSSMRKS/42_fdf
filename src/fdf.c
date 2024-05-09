@@ -6,7 +6,7 @@
 /*   By: wssmrks <wssmrks@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 15:22:19 by maweiss           #+#    #+#             */
-/*   Updated: 2024/05/07 23:58:11 by wssmrks          ###   ########.fr       */
+/*   Updated: 2024/05/09 01:48:01 by wssmrks          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ int	main(int argc, char **argv)
 	if (ft_input_handler(argc, argv, &vars) == -1)
 	{
 		ft_printf_err("Error: Invalid number of arguments.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 		return (0);
 	}
 	ft_size_map(&vars);
@@ -35,23 +35,24 @@ int	main(int argc, char **argv)
 	ft_draw_map(&vars, &img);
 	vars.img = &img;
 	mlx_put_image_to_window(vars.mlx, vars.win, img.img, 0, 0);
-	mlx_hook(vars.win, 2, 1L << 0, mlx_key_handler, &vars);
-	mlx_hook(vars.win, 17, 1L << 17, mlx_close, &vars);
+	mlx_hook(vars.win, 2, 1L << 0, ft_mlx_key_handler, &vars);
+	mlx_hook(vars.win, 17, 1L << 17, ft_mlx_close, &vars);
 	mlx_loop(vars.mlx);
 }
+
 /*
 Todo:
 [x] add input check;
 [x] add lines;
-[ ] remove tester submodule and makefiles clones;
+[ ] remove tester submodule and make makefiles clone;
 [ ] remove mlx_linux submodule and makefiles clones;
-[ ] standardize zoom; error sits in resize map. y and x are changing due to raster in y x in screen and map coordinates.
-[ ] add Header files and enum;
-[ ] check propper error handling and exit values
-[ ] valgrind;
-[ ] error Handling;
-[ ] Norminette;
-[ ] untangle functions;
+[x] standardize zoom;
+[x] add Header files and enum;
+[x] check propper error handling and exit values
+[x] valgrind;
+[x] error Handling;
+[x] Norminette;
+[x] untangle functions;
 [ ] Makefile;
 [ ] check against subject;
 */
