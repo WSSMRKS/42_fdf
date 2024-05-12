@@ -8,14 +8,15 @@ NAME = fdf
 # no bonus
 BONUS_NAME =
 # Compiler & COptions & CFlags #
-CFLAGS = -g -Werror -Wall -Wextra -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz
+CFLAGS =  -g -Werror -Wall -Wextra -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz
 TESTFLAGS = -g3
-COPTIONS = -g -Werror -Wall -Wextra -I/usr/include -Imlx_linux/ -O0 -c
+COPTIONS = -D Z_SCALE=1 -g -Werror -Wall -Wextra -I/usr/include -Imlx_linux/ -O0 -c
 CC = cc
 # Source Files #
 SRC = src/fdf.c src/fdf_clean_closing.c src/fdf_drawing.c src/fdf_init_structs.c src/fdf_mlx.c src/fdf_parsing.c src/fdf_parsing2.c
 HEADERS = fdf.h fdf_defines.h fdf_includes.h
 LIBFT_SRC = libft/libft.a
+MLX_SRC = mlx_linux/libmlx_Linux.a
 # Object Files
 SRC_OBJ = $(SRC:.c=.o)
 BONUS_OBJ = $(BONUS_SRC:.c=.o)
@@ -25,18 +26,19 @@ TEST_OBJ = $(TEST_SRC:.c=.o)
 # Targets #
 all: $(NAME)
 
-$(NAME): mlx $(LIBFT_SRC) $(SRC_OBJ)
-	$(CC) $(SRC_OBJ) $(LIBFT_SRC) $(CFLAGS) -o $(NAME)
+$(NAME): $(MLX_SRC) $(LIBFT_SRC) $(SRC_OBJ)
+	$(CC) $(SRC_OBJ) $(MLX_SRC) $(LIBFT_SRC) $(CFLAGS) -o $(NAME) 
 
 $(LIBFT_SRC):
 	$(MAKE) all -C libft/
 
-mlx:
+$(MLX_SRC):
+	echo trying to build mlx
   ifeq ("$(wildcard $(MLXDIR))", "")
 	echo "Directory does not exist."
 	echo "Downloading mlx_linux."
 	git clone git@github.com:WSSMRKS/mlx_linux.git
-	$(MAKE) all -C mlx_linux/
+	$(MAKE) all -C mlx_linux
   else
 	echo "Skipping download because mlx_linux already exists."
 	$(MAKE) all -C mlx_linux/
@@ -79,7 +81,8 @@ fclean: clean
 	rm -rf fdf_tester
 	echo "\"$(NAME)\" deleted"
 
-re: fclean all
+re: fclean 
+	$(MAKE) all
 
 name:
 	echo "$(NAME)"
@@ -99,4 +102,4 @@ help:
 	echo "re --> recompile everything (fclean, all)"
 	echo "libft --> Compile libft and copy libft.h and libft.a to project folder"
 
-.PHONY: all fclean clean re
+.PHONY: all fclean clean re name help test dl_tester exes
